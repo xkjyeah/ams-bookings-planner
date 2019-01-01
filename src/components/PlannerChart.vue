@@ -1,29 +1,21 @@
 <template>
-  <div class="planner-chart">
+  <div class="planner-chart"
+    :style="{
+      'grid-template-columns': `${yAxisWidth}px 1fr`,
+      'grid-template-rows': `${xAxisHeight}px 1fr`,
+    }"
+    >
 
     <!-- include the content -->
-
-    <div class="y-axis" :style="{
-      width: yAxisWidth + 'px',
-      top: (xAxisHeight - scrollTop) + 'px',
-    }">
+    <div class="y-axis">
       <slot name="y-axis" :scale="yAxisScale"></slot>
     </div>
 
-    <div class="x-axis" :style="{
-      left: (yAxisWidth - scrollLeft) + 'px',
-      height: xAxisHeight + 'px',
-    }">
+    <div class="x-axis">
       <slot name="x-axis" :scale="xAxisScale"></slot>
     </div>
 
-    <div class="content" :style="{
-      left: yAxisWidth + 'px',
-      top: xAxisHeight + 'px',
-    }"
-      ref="contentElem"
-      @scroll="updateScrollOffsets">
-
+    <div class="content">
       <!-- create the background SVGs -->
       <slot name="background-svg"
         :xScale="xAxisScale"
@@ -40,25 +32,33 @@
 
 <style lang="scss" scoped>
 .planner-chart {
+  overflow-x: auto;
+  display: grid;
+
   .y-axis {
-    position: absolute;
+    background-color: rgba(255, 255, 255, 0.9);
+    position: sticky;
     left: 0;
-    bottom: 0;
+    grid-column: 1;
+    grid-row: 2;
     overflow: hidden; // fixme: need to deal with offsets from content
+    z-index: 99;
   }
 
   .x-axis {
-    position: absolute;
+    background-color: rgba(255, 255, 255, 0.9);
+    grid-column: 2;
+    grid-row: 1;
     top: 0;
-    right: 0;
+    position: sticky;
     overflow: hidden; // fixme: need to deal with offsets from content
+    z-index: 99;
   }
 
   .content {
-    position: absolute;
-    overflow: auto;
-    bottom: 0;
-    right: 0;
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
   }
 }
 </style>
