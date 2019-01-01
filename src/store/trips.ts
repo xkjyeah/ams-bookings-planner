@@ -65,8 +65,20 @@ export default {
 
   mutations: {
     reorderTeam (state: TripsState, options: {oldIndex: number, newIndex: number}) {
-      const spliced = state.teams.splice(options.oldIndex, 1)
-      state.teams.splice(options.newIndex, 1)
+      const {oldIndex, newIndex} = options
+
+      if (oldIndex === newIndex) return
+      else if (oldIndex < newIndex) {
+        const spliced = state.teams.splice(options.oldIndex, 1)
+        state.teams.splice(options.newIndex - 1, 0, ...spliced)
+      } else {
+        const spliced = state.teams.splice(options.oldIndex, 1)
+        state.teams.splice(options.newIndex, 0, ...spliced)
+      }
+    },
+
+    updateTeams (state: TripsState, teams: KeyableTrip[]) {
+      state.teams = teams
     },
 
     importJobs (state: TripsState, jobs: Job[]) {

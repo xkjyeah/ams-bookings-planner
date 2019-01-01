@@ -1,4 +1,5 @@
 import { Job } from '@/lib/types';
+import uniqueId from '@/lib/uniqueId';
 
 function makeTimeOffset(hours = 0, minutes = 0, seconds = 0) {
   return hours * 3600e3 +
@@ -638,12 +639,14 @@ export default function (): Job[] {
     .map(s => s.split('\t'))
     .map(s => ({
       trip: {
+        id: uniqueId(),
         driver: s[0] || null,
         medic: s[1] || null,
         startTime: toTime(s[4]),
         endTime: toTime(s[5]),
       },
       secondTrip: (s[2] || s[3] || s[6]) ? {
+        id: uniqueId(),
         driver: s[2] || null,
         medic: s[3] || null,
         startTime: toTime(s[6]),

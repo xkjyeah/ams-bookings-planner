@@ -9,7 +9,7 @@
           <!-- <g :transform="`translate(${s.yAxisWidth} ${s.xAxisHeight})`"> -->
             <HorizontalGridLines
               :rowHeight="yAxisScale"
-              :n="teamSchedules.length + 1"
+              :n="teamSchedules.length"
               :width="chartAreaWidth"
             />
             <VerticalGridLines
@@ -38,18 +38,10 @@
       </template>
 
       <template slot="y-axis" slot-scope="s">
-        <div v-for="(team_data, i) in teamSchedules"
-          :key="i"
-          :style="{
-            'text-align': 'right',
-            left: '0',
-            right: '0',
-            height: (s.scale) + 'px',
-            top: (s.scale * i) + 'px',
-            position: 'absolute',
-          }">
-          {{team_data[0].driver}}, {{team_data[0].medic}}
-        </div>
+        <TeamList
+          :teamSchedules="teamSchedules"
+          :scale="s.scale"
+          />
       </template>
 
       <template slot-scope="s">
@@ -80,6 +72,7 @@ import _ from 'lodash';
 import Vue from 'vue';
 import {JobTrip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState} from '@/store/trips.ts';
+import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import PlannerChart from '@/components/PlannerChart.vue';
 import HorizontalGridLines from '@/components/HorizontalGridLines.vue';
@@ -121,8 +114,11 @@ export default Vue.extend({
     HorizontalGridLines,
     PlannerChart,
     TimeUpdater,
+    TeamList,
     Trip,
     VerticalGridLines
   },
+  methods: {
+  }
 });
 </script>
