@@ -64,8 +64,9 @@
 </style>
 
 <script lang="ts">
+import Vue from 'vue'
 
-export default {
+export default Vue.extend({
   data () {
     return {
       scrollLeft: 0,
@@ -96,6 +97,13 @@ export default {
     }
   },
 
+  provide () {
+    return {
+      xScale: () => this.xAxisScale,
+      yScale: () => this.yAxisScale,
+    }
+  },
+
   methods: {
     updateScrollOffsets () {
       this.scrollLeft = (this.$refs.contentElem as HTMLElement).scrollLeft
@@ -107,6 +115,6 @@ export default {
       this.scrollTop = (this.$refs.contentElem as HTMLElement).scrollTop = top
     }
   }
-}
+})
 
 </script>

@@ -1,4 +1,4 @@
-
+import { Job } from '@/lib/types';
 
 function makeTimeOffset(hours = 0, minutes = 0, seconds = 0) {
   return hours * 3600e3 +
@@ -631,25 +631,7 @@ function toTime(s: string) {
   return hour * 3600e3 + minute * 60e3
 }
 
-export interface Trip {
-  driver: string | null,
-  medic: string | null,
-  startTime: number | null,
-  endTime: number | null,
-}
-export interface Job {
-  trip: Trip,
-  secondTrip: Trip | null,
-  type: string,
-  price: number | null,
-  description: string,
-  cancelled: boolean
-}
-
-export interface JobTrip extends Trip, Job {
-}
-
-export default function () {
+export default function (): Job[] {
   const r = JOBS
     .split('\n')
     .filter(Boolean)
@@ -672,6 +654,5 @@ export default function () {
       description: s[10],
       cancelled: s[11] === 'Cancelled',
     }))
-  console.log(JSON.stringify(r, null, 2))
   return r
 }

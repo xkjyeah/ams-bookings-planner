@@ -10,12 +10,13 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import store from '@/store'
 import _ from 'lodash'
 
 export default Vue.extend({
   data () {
-    const d = new Date
-    const e = new Date
+    const d = new Date((store.state as any).time.time)
+    const e = new Date((store.state as any).time.time)
     d.setHours(0, 0, 0)
     return {
       time: e.getTime() - d.getTime()
