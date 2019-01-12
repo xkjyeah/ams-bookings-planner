@@ -17,9 +17,9 @@ function makeTripTeamKey(trip: KeyableTrip) {
   }
 }
 
-function tripKey (trip: KeyableTrip) {
+export function tripKey (trip: KeyableTrip) {
   const key = makeTripTeamKey(trip)
-    return 'x' + (key || '')
+  return 'x' + (key || '')
 }
 
 /**
@@ -78,6 +78,8 @@ export default {
     },
 
     updateTeams (state: TripsState, teams: KeyableTrip[]) {
+      // FIXME: add checks to ensure teams don't disappear
+      // and are not duplicated
       state.teams = teams
     },
 

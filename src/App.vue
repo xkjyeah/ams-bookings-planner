@@ -1,84 +1,79 @@
 <template>
-  <div>
-    <PlannerChart class="planner-chart"
-      :xAxisScale="xAxisScale"
-      :yAxisScale="yAxisScale">
-      <template slot="background-svg" slot-scope="s">
-        <svg :width="chartAreaWidth + s.yAxisWidth"
-          :height="chartAreaHeight + s.xAxisHeight">
-          <!-- <g :transform="`translate(${s.yAxisWidth} ${s.xAxisHeight})`"> -->
-            <HorizontalGridLines
-              :rowHeight="yAxisScale"
-              :n="teamSchedules.length"
-              :width="chartAreaWidth"
-            />
-            <VerticalGridLines
-              :columnWidth="xAxisScale"
-              :n="24"
-              :height="chartAreaHeight"
-            />
-            <CurrentTime
-              :columnWidth="xAxisScale"
-              :height="chartAreaHeight"
-            />
-          <!-- </g> -->
-        </svg>
-      </template>
-
-      <template slot="x-axis" slot-scope="s">
-        <div v-for="i in _.range(0, 24)"
-          :key="i"
-          :style="{
-            left: (s.scale * i) + 'px',
-            bottom: '0',
-            position: 'absolute',
-          }">
-          &#x00a0;{{i}}:00
-        </div>
-      </template>
-
-      <template slot="y-axis" slot-scope="s">
-        <TeamList
-          :teamSchedules="teamSchedules"
-          :scale="s.scale"
+  <v-app class="app">
+    <div class="controls">
+      <v-radio-group
+          v-model="xAxisScale">
+        <v-radio
+          label="Small"
+          :value="100"
           />
-      </template>
-
-      <template slot-scope="s">
-        <template v-for="([team, data], i) in teamSchedules">
-          <Trip v-for="(trip, j) in data.trips"
-            :key="trip.id"
-            :trip="trip"
-            :yIndexFunction="t => i"
-            />
-        </template>
-      </template>
-    </PlannerChart>
-  </div>
+        <v-radio
+          label="Medium"
+          :value="200"
+          />
+        <v-radio
+          label="Large"
+          :value="400"
+          />
+      </v-radio-group>
+    </div>
+    <div class="trip-editor-window">
+      <TripEditor />
+    </div>
+    <ChartArea
+      class="chart-area"
+      ref="chart-area"
+      :xAxisScale="xAxisScale"
+      :yAxisScale="yAxisScale"
+      @trip-clicked="$store.commit('tripEditing/editTrip', $event)"
+      />
+    <TimeUpdater />
+  </v-app>
 </template>
 
 <style lang="scss">
 .planner-chart {
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  position: absolute;
+  position: relative;
 }
 </style>
+
+<style lang="scss" scoped>
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+
+  .controls {
+    flex: 0 0 auto;
+  }
+  .chart-area {
+    flex: 1 1 auto;
+  }
+
+  .trip-editor-window {
+    position: fixed;
+    right: 1em;
+    top: 1em;
+    bottom: 1em;
+    overflow: auto;
+    background: white;
+    box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+}
+</style>
+
 
 <script lang="ts">
 import _ from 'lodash';
 import Vue from 'vue';
 import {JobTrip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState} from '@/store/trips.ts';
+import ChartArea from '@/components/chart/ChartArea.vue';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
-import PlannerChart from '@/components/PlannerChart.vue';
-import HorizontalGridLines from '@/components/HorizontalGridLines.vue';
-import VerticalGridLines from '@/components/VerticalGridLines.vue';
-import CurrentTime from '@/components/CurrentTime.vue';
-import Trip from '@/components/Trip.vue';
+import TripEditor from '@/components/TripEditor.vue';
 import store from '@/store';
 
 export default Vue.extend({
@@ -110,13 +105,13 @@ export default Vue.extend({
     },
   },
   components: {
-    CurrentTime,
-    HorizontalGridLines,
-    PlannerChart,
+    ChartArea,
     TimeUpdater,
     TeamList,
-    Trip,
-    VerticalGridLines
+    TripEditor,
+  },
+  mounted () {
+    (this.$refs['chart-area'] as any).scrollToCurrentTime()
   },
   methods: {
   }

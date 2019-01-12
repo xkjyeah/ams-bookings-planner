@@ -1,29 +1,8 @@
-# ams-bookings-planner
+TODO:
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+1. [X] Automatically scroll to the current time
+2. [ ] Forms for creating new bookings
+3. [ ] Inspecting an existing booking
+4. [ ] Scaling out?
+5. [ ] Use color to denote location?
+6. [ ] Drag-and-drop rearrangement of trips

@@ -57,6 +57,12 @@
 <script lang="ts">
 import Vue from 'vue'
 
+interface TeamListData {
+  dragIndex: number,
+  isDragging: boolean,
+  destinationIndex: number,
+}
+
 export default Vue.extend({
   props: {
     scale: {
@@ -68,55 +74,54 @@ export default Vue.extend({
       required: true,
     }
   },
-  data () {
+  data (): TeamListData {
     return {
       dragIndex: -1,
       isDragging: false,
       destinationIndex: 0,
     }
   },
-  mounted () {
-    for (let i of Array.from((this.$el as HTMLElement).children)) {
-      i.dataset.test = Math.random()
-    }
-  },
   methods: {
     handleMove (options: any): void {
-      this.destinationIndex = options.draggedContext.futureIndex
+      this.$data.destinationIndex = options.draggedContext.futureIndex
     },
     handleInput (v: any): void {
       this.$store.commit('trips/updateTeams', v)
     },
 
     onDragStart (e: DragEvent, index: number): void {
+      if (!e.dataTransfer) throw new Error('Unexpected null dataTransfer')
+
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.dropEffect = "move"
       // Firefox insists on this to activate the drag
-      e.dataTransfer.setData('text/my-drag', 'dummy');
-      this.dragIndex = index
-      this.isDragging = true
+      e.dataTransfer.setData('text/my-drag', 'dummy')
+      ;(this as any as TeamListData).dragIndex = index
+      ;(this as any as TeamListData).isDragging = true
     },
     onDragEnd (e: DragEvent, index: number): void {
-      if (this.destinationIndex < 0) return
+      if ((this as any as TeamListData).destinationIndex < 0) return
 
       this.$store.commit('trips/reorderTeam', {
-        oldIndex: this.dragIndex,
-        newIndex: this.destinationIndex
+        oldIndex: (this as any as TeamListData).dragIndex,
+        newIndex: (this as any as TeamListData).destinationIndex
       })
 
-      this.isDragging = false
-      this.dragIndex = -1
+      ;(this as any as TeamListData).isDragging = false
+      ;(this as any as TeamListData).dragIndex = -1
     },
     onDragOver (e: DragEvent, index: number): boolean {
+      if (!e.dataTransfer) throw new Error('Unexpected null dataTransfer')
+
       if (!e.dataTransfer.types.includes('text/my-drag')) {
-        return
+        return true
       }
       e.preventDefault()
       e.dataTransfer.dropEffect = 'move'
-      this.isDragging = true
-      this.destinationIndex =
-        (index < this.dragIndex) ? index
-        : (index === this.dragIndex) ? -1
+      ;(this as any as TeamListData).isDragging = true
+      ;(this as any as TeamListData).destinationIndex =
+        (index < (this as any as TeamListData).dragIndex) ? index
+        : (index === (this as any as TeamListData).dragIndex) ? -1
         : (index + 1)
       return false
     },

@@ -1,5 +1,8 @@
 <template>
-  <div
+  <v-tooltip
+    v-bind="{
+      [yIndexFunction(trip) === 0 ? 'bottom' : 'top']: true
+    }"
     class="trip-box"
     :style="{
       left: (trip.startTime / 3600e3 * xScale()) + 'px',
@@ -7,9 +10,18 @@
       height: (yScale()) + 'px',
       top: (yIndexFunction(trip) * yScale()) + 'px',
       opacity: trip.cancelled ? 0.5 : 1.0,
-    }">
-    {{trip.description}}
-  </div>
+    }"
+    @click.native="$emit('click', $event)"
+    >
+    <div
+      slot="activator">
+      {{trip.description}}
+    </div>
+    <span>
+      <!-- tooltip -->
+      {{trip.description}}
+    </span>
+  </v-tooltip>
 </template>
 
 <style lang="scss" scoped>
