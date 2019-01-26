@@ -8,8 +8,12 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@types/assert": "^1.4.1",
+    "@types/dateformat": "^3.0.0",
     "@types/lodash": "^4.14.119",
+    "dateformat": "^3.0.3",
     "lodash": "^4.17.11",
+    "material-design-icons-iconfont": "^4.0.3",
     "node-sass": "^4.11.0",
     "sass-loader": "^7.1.0",
     "vue": "^2.5.17",

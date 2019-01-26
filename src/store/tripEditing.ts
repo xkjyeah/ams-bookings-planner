@@ -1,5 +1,6 @@
 import {Job, Trip, KeyableTrip} from '@/lib/types'
 import trips, { TripsState, tripKey } from './trips'
+import assert from 'assert'
 
 export interface TripEditingState {
   teamBeingEdited: KeyableTrip | null,
@@ -47,6 +48,28 @@ export default {
         state.teamBeingEdited = null
         state.tripIndexBeingEdited = 0
       }
+    },
+  },
+
+  actions: {
+    updateTripBeingEdited (
+      context: any,
+      updates: {[key: string]: any},
+    ) {
+      assert(
+        context.getters.tripBeingEdited,
+        'There is no valid trip being edited'
+      )
+
+      context.commit(
+        'trips/updateTrip',
+        {
+          team: (context.state as TripEditingState).teamBeingEdited,
+          index: (context.state as TripEditingState).tripIndexBeingEdited,
+          updates,
+        },
+        {root: true}
+      )
     }
   }
 }

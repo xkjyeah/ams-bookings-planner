@@ -1,7 +1,7 @@
 import {Job, Trip, KeyableTrip} from '@/lib/types'
 import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
-
+import assert from 'assert'
 
 function makeTripTeamKey(trip: KeyableTrip) {
   if (trip.driver && trip.medic) {
@@ -119,6 +119,20 @@ export default {
           ]
         })
       )
+    },
+
+    updateTrip (
+      state: TripsState,
+      options: {team: KeyableTrip, index: number, updates: {[key: string]: any}}
+    ) {
+      // FIXME: Type safety?
+      const trip: any = state.scheduleByTeam[tripKey(options.team)].trips[options.index]
+
+      assert(trip)
+
+      for (let key of Object.keys(options.updates)) {
+        trip[key] = options.updates[key]
+      }
     }
   }
 }

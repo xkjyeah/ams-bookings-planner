@@ -17,9 +17,7 @@
           />
       </v-radio-group>
     </div>
-    <div class="trip-editor-window">
-      <TripEditor />
-    </div>
+    <TripEditor class="trip-editor-window" />
     <ChartArea
       class="chart-area"
       ref="chart-area"
@@ -56,10 +54,13 @@
     right: 1em;
     top: 1em;
     bottom: 1em;
+    width: 33vw;
+    padding: 0.5em;
     overflow: auto;
     background: white;
     box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.5);
     z-index: 999;
+    box-sizing: border-box;
   }
 }
 </style>

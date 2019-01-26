@@ -633,6 +633,7 @@ function toTime(s: string) {
 }
 
 export default function (): Job[] {
+  const now = new Date
   const r = JOBS
     .split('\n')
     .filter(Boolean)
@@ -652,6 +653,7 @@ export default function (): Job[] {
         startTime: toTime(s[6]),
         endTime: toTime(s[7]),
       } : null,
+      date: Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
       type: s[8],
       price: s[9] ? parseFloat(s[9]) : null,
       description: s[10],
