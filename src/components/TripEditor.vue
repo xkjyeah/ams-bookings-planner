@@ -32,6 +32,16 @@
       :value="tripBeingEdited.endTime"
       @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
       />
+
+    <div :style="{'background-color': tripBeingEdited.latLng && singaporeColors(tripBeingEdited.latLng)}">
+      <GmapAutocomplete
+        @place_changed="updateLatLng"
+        :options="{
+          bounds: {north: 1.48, south: 1.2, east: 104.1, west: 102},
+          strictBounds: true
+        }"
+        />
+    </div>
   </div>
 </template>
 
@@ -41,6 +51,8 @@ import { Trip } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
 import TimeEditor from '@/components/common/TimeEditor.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
+import singaporeColors from '@/lib/singaporeColors'
+import {} from 'googlemaps'
 
 export default Vue.extend({
   components: {
@@ -51,7 +63,9 @@ export default Vue.extend({
   computed: {
     tripBeingEdited (): Trip {
       return this.$store.getters['tripEditing/tripBeingEdited'] as Trip
-    }
+    },
+
+    singaporeColors: () => singaporeColors
   },
 
   methods: {
@@ -59,7 +73,7 @@ export default Vue.extend({
       this.$store.dispatch('tripEditing/updateTripBeingEdited', {[field]: value})
     },
 
-    combineDateTimeOffset(...args) {
+    combineDateTimeOffset(...args: any[]) {
       const [dateRef, timeRef, timeOffset] =
         (args.length === 2) ? [args[0], null, args[1]]
         : (args.length === 3) ? args
@@ -73,6 +87,10 @@ export default Vue.extend({
         date.getMonth(),
         date.getDate(),
       )
+    },
+
+    updateLatLng (e: google.maps.places.PlaceResult) {
+      this.updateTrip('latLng', {lat: e.geometry.location.lat(), lng: e.geometry.location.lng()})
     }
   }
 })

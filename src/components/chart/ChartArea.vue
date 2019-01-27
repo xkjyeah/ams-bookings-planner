@@ -46,6 +46,7 @@
     <template slot-scope="s">
       <template v-for="([team, data], i) in teamSchedules">
         <TripBar v-for="(trip, j) in data.trips"
+          :isSelected="tripKey(team) === tripKey($store.state.tripEditing.teamBeingEdited) && j === $store.state.tripEditing.tripIndexBeingEdited"
           :key="trip.id"
           :trip="trip"
           :yIndexFunction="t => i"
@@ -60,7 +61,7 @@
 import _ from 'lodash';
 import Vue from 'vue';
 import {JobTrip, KeyableTrip, Trip} from '@/lib/types.ts';
-import {TripsState} from '@/store/trips.ts';
+import {TripsState, tripKey} from '@/store/trips.ts';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import PlannerChart from '@/components/chart/PlannerChart.vue';
@@ -78,6 +79,8 @@ export default Vue.extend({
   },
   computed: {
     _: () => _,
+
+    tripKey: () => tripKey,
 
     chartAreaWidth () {
       return 24 * this.xAxisScale

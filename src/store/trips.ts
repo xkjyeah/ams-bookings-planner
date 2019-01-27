@@ -4,6 +4,7 @@ import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
 
 function makeTripTeamKey(trip: KeyableTrip) {
+  if (!trip) return null
   if (trip.driver && trip.medic) {
     return trip.driver.trim().toLowerCase() +
       ' ' +
