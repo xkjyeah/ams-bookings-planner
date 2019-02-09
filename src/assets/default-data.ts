@@ -658,7 +658,14 @@ export default function (): Job[] {
       price: s[9] ? parseFloat(s[9]) : null,
       description: s[10],
       cancelled: s[11] === 'Cancelled',
-      latLng: null,
+      startPostcode: null,
+      endPostcode: null,
+      startAddress: null,
+      endAddress: null,
+      startLocation: null,
+      endLocation: null,
+      startLatLng: null,
+      endLatLng: null,
     }))
   return r
 }

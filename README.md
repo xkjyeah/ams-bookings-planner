@@ -8,4 +8,4 @@ TODO:
 6. [ ] Drag-and-drop rearrangement of trips
 7. [ ] Import a bunch of regular / historical trips (for dialysis)
 8. [ ] Persisting to a backend
-9. [ ] Split by origin / destination
+9. [X] Split by origin / destination

@@ -3,6 +3,7 @@ import Vuetify from 'vuetify'
 import App from './App.vue'
 import store from './store'
 import defaultData from '@/assets/default-data';
+import Vault from '@/vault'
 import * as VueGoogleMaps from 'vue2-google-maps';
 
 Vue.config.productionTip = false
@@ -11,7 +12,7 @@ Vue.config.productionTip = false
 Vue.use(Vuetify)
 ;(Vue as any).use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyDesj7zbyR3W906S_H3rq-y2Ao3_yh7qRI',
+    key: Vault.googleMapsApiKey,
     libraries: ['places'],
   }
 })

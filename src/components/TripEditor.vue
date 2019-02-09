@@ -9,10 +9,46 @@
       {{tripBeingEdited.description}}
     </h2>
 
-    <v-text-field
+    <v-textarea
       label="Description"
       :value="tripBeingEdited.description"
       @input="updateTrip('description', $event)"
+      rows="1"
+      auto-grow
+      />
+
+    <PostcodePicker
+      label="Start Postcode"
+      :value="tripBeingEdited.startPostcode"
+      @input="updateTrip('startPostcode', $event)"
+      @address-found="updateTrip('startLatLng', $event.latLng), updateTrip('startAddress', $event.address)"
+    />
+    <div
+      style="border-width: 2px; border-style: solid; flex: 1 1 auto"
+      :style="{'border-color': tripBeingEdited.startLatLng && singaporeColors(tripBeingEdited.startLatLng)}">
+      {{tripBeingEdited.startAddress}}
+    </div>
+    <v-text-field
+      label="Start Location (Details)"
+      :value="tripBeingEdited.startLocation"
+      @input="updateTrip('startLocation', $event)"
+      />
+
+    <PostcodePicker
+      label="End Postcode"
+      :value="tripBeingEdited.endPostcode"
+      @input="updateTrip('endPostcode', $event)"
+      @address-found="updateTrip('endLatLng', $event.latLng), updateTrip('endAddress', $event.address)"
+    />
+    <div
+      style="border-width: 2px; border-style: solid; flex: 1 1 auto"
+      :style="{'border-color': tripBeingEdited.endLatLng && singaporeColors(tripBeingEdited.endLatLng)}">
+      {{tripBeingEdited.endAddress}}
+    </div>
+    <v-text-field
+      label="End Location (Details)"
+      :value="tripBeingEdited.endLocation"
+      @input="updateTrip('endLocation', $event)"
       />
 
     <DateEditor
@@ -33,15 +69,7 @@
       @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
       />
 
-    <div :style="{'background-color': tripBeingEdited.latLng && singaporeColors(tripBeingEdited.latLng)}">
-      <GmapAutocomplete
-        @place_changed="updateLatLng"
-        :options="{
-          bounds: {north: 1.48, south: 1.2, east: 104.1, west: 102},
-          strictBounds: true
-        }"
-        />
-    </div>
+    <PostcodePicker />
   </div>
 </template>
 
@@ -50,6 +78,7 @@ import Vue from 'vue'
 import { Trip } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
 import TimeEditor from '@/components/common/TimeEditor.vue'
+import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
@@ -58,6 +87,7 @@ export default Vue.extend({
   components: {
     TimeEditor,
     DateEditor,
+    PostcodePicker,
   },
 
   computed: {
@@ -88,10 +118,6 @@ export default Vue.extend({
         date.getDate(),
       )
     },
-
-    updateLatLng (e: google.maps.places.PlaceResult) {
-      this.updateTrip('latLng', {lat: e.geometry.location.lat(), lng: e.geometry.location.lng()})
-    }
   }
 })
 </script>

@@ -13,7 +13,7 @@
       height: (yScale()) + 'px',
       top: (yIndexFunction(trip) * yScale()) + 'px',
       opacity: trip.cancelled ? 0.5 : 1.0,
-      'background-color': trip.latLng ? singaporeColors(trip.latLng) : '#CCC',
+      'background': locationGradient,
       color: trip.latLng ? '#FFF' : '#000',
     }"
     @click.native="$emit('click', $event)"
@@ -70,7 +70,23 @@ export default Vue.extend({
   },
 
   computed: {
-    singaporeColors: () => singaporeColors
+    singaporeColors: () => singaporeColors,
+
+    locationGradient () {
+      if (this.trip.startLatLng && this.trip.endLatLng) {
+        return `linear-gradient(
+          90deg,
+            ${this.singaporeColors(this.trip.startLatLng)} 20%,
+            ${this.singaporeColors(this.trip.endLatLng)} 80%
+          )`
+      } else if (this.trip.startLatLng) {
+        return this.singaporeColors(this.trip.startLatLng)
+      } else if (this.trip.endLatLng) {
+        return this.singaporeColors(this.trip.endLatLng)
+      } else {
+        return '#CCC'
+      }
+    }
   },
 
   methods: {
