@@ -78,7 +78,9 @@ export default {
       }
     },
 
-    reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip}) {
+    reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip | null}) {
+      if (options.team === null) return
+
       const fromSchedule = state.scheduleByTeam[tripKey(options.trip)]
       const toSchedule = state.scheduleByTeam[tripKey(options.team)]
 

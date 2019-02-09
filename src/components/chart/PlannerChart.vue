@@ -18,7 +18,7 @@
       <slot name="x-axis" :scale="xAxisScale"></slot>
     </div>
 
-    <div class="content">
+    <div class="content" ref="scrollRef">
       <!-- create the background SVGs -->
       <slot name="background-svg"
         :xScale="xAxisScale"
@@ -149,22 +149,22 @@ export default Vue.extend({
       const data = JSON.parse(event.dataTransfer.getData('application/json'))
       const {start, end} = data
 
-      const y = computeRelativeYPosition(event, this.$el)
+      const y = computeRelativeYPosition(event, this.$refs.scrollRef)
 
       // Show preview of destination
       // Compute row, width
-      this.drag.row = Math.floor((y - this.xAxisHeight) / this.yAxisScale)
+      this.drag.row = Math.floor(y / this.yAxisScale)
       this.drag.start = start
       this.drag.end = end
     },
 
     onDrop(event: DragEvent) {
-      const y = computeRelativeYPosition(event, this.$el)
+      const y = computeRelativeYPosition(event, this.$refs.scrollRef)
 
       const data = JSON.parse(event.dataTransfer.getData('application/json'))
       const {key, tripIndex} = data
 
-      const row = Math.floor((y - this.xAxisHeight) / this.yAxisScale)
+      const row = Math.floor(y / this.yAxisScale)
 
       this.$store.commit('trips/reassignJob', {
         trip: this.$store.state.trips.scheduleByTeam[key].trips[tripIndex],
