@@ -2,6 +2,7 @@
   <v-text-field
     :label="label"
     :value="value"
+    @blur="maybeEmitPostcode"
     @input="$emit('input', $event), updateQuery()"
     />
 </template>
@@ -34,6 +35,12 @@ export default Vue.extend({
     },
   },
 
+  data () {
+    return {
+      lastKnownPostcode: null,
+    }
+  },
+
   mounted() {
     // this.$autocompleteService = new google.maps.places.AutocompleteService()
     // this.$placesService = new google.maps.places.PlacesService(this.$refs.attribution)
@@ -42,15 +49,22 @@ export default Vue.extend({
   methods: {
     updateQuery: _.debounce(function () {
       this.query = this.value || ''
-      if (this.query.match(/^[0-9]{6}$/)) {
+      if (this.query) {
         this.triggerOneMapSearch()
       } else {
         this.$emit('address-found', {
           address: null,
           latLng: null,
         })
+        this.lastKnownPostcode = null
       }
     }, 200),
+
+    maybeEmitPostcode () {
+      if (this.lastKnownPostcode && this.value !== this.lastKnownPostcode) {
+        this.$emit('input', this.lastKnownPostcode)
+      }
+    },
 
     triggerOneMapSearch () {
       const promise = this.$oneMapPromise = fetch('https://developers.onemap.sg/commonapi/search?' + querystring.stringify({
@@ -71,11 +85,15 @@ export default Vue.extend({
               lng: parseFloat(result.results[0].LONGITUDE),
             },
           })
+          this.lastKnownPostcode = result.results[0].POSTAL !== 'NIL'
+            ? result.results[0].POSTAL
+            : null
         } else {
           this.$emit('address-found', {
             address: '(not found)',
             latLng: null,
           })
+          this.lastKnownPostcode = null
         }
       })
     },
