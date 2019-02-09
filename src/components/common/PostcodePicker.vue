@@ -49,7 +49,7 @@ export default Vue.extend({
   methods: {
     updateQuery: _.debounce(function () {
       this.query = this.value || ''
-      if (this.query) {
+      if (this.query) { // TODO: inject well-known locations, e.g. CGH, SGH, OV Balestier here
         this.triggerOneMapSearch()
       } else {
         this.$emit('address-found', {

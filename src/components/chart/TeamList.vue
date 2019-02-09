@@ -11,6 +11,7 @@
         height: (scale) + 'px',
         top: (scale * i) + 'px',
         position: 'absolute',
+        'user-select': 'none',
       }"
       class="team-marker"
       :class="{ 'is-dragged': dragIndex === i }"

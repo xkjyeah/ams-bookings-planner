@@ -1,7 +1,8 @@
 <template>
   <PlannerChart class="planner-chart"
     :xAxisScale="xAxisScale"
-    :yAxisScale="yAxisScale">
+    :yAxisScale="yAxisScale"
+    >
     <template slot="background-svg" slot-scope="s">
       <svg :width="chartAreaWidth + s.yAxisWidth"
         :height="chartAreaHeight + s.xAxisHeight">
@@ -51,6 +52,9 @@
           :trip="trip"
           :yIndexFunction="t => i"
           @click="tripClicked(trip, j)"
+
+          v-draggable
+          @dragstart.native="onDragStart($event, trip, j)"
           />
       </template>
     </template>
@@ -134,7 +138,19 @@ export default Vue.extend({
 
     tripClicked (trip: Trip, index: number) {
       this.$emit('trip-clicked', {team: trip, index})
-    }
+    },
+
+    onDragStart(event: DragEvent, trip: Trip, tripIndex: number) {
+      event.dataTransfer.setData(
+        'application/json',
+        JSON.stringify({
+          start: trip.startTime,
+          end: trip.endTime || ((trip.startTime || 0) + 30 * 60e3),
+          key: tripKey(trip),
+          tripIndex,
+        }))
+    },
+
   }
 });
 </script>

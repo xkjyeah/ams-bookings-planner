@@ -78,6 +78,26 @@ export default {
       }
     },
 
+    reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip}) {
+      const fromSchedule = state.scheduleByTeam[tripKey(options.trip)]
+      const toSchedule = state.scheduleByTeam[tripKey(options.team)]
+
+      assert(fromSchedule)
+      assert(toSchedule)
+
+      // splice the trip
+      const index = fromSchedule.trips.indexOf(options.trip)
+      assert(index !== -1)
+      fromSchedule.trips.splice(index, 1)
+
+      // re-insert
+      toSchedule.trips.push({
+        ...options.trip,
+        driver: options.team.driver,
+        medic: options.team.medic,
+      })
+    },
+
     updateTeams (state: TripsState, teams: KeyableTrip[]) {
       // FIXME: add checks to ensure teams don't disappear
       // and are not duplicated

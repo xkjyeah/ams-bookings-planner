@@ -16,6 +16,14 @@ Vue.use(Vuetify)
     libraries: ['places'],
   }
 })
+
+// draggable is not settable on the element, is it?
+Vue.directive('draggable', {
+  bind (el: HTMLElement) {
+    el.draggable = true
+  }
+})
+
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 

@@ -4,6 +4,9 @@
       'grid-template-columns': `${yAxisWidth}px 1fr`,
       'grid-template-rows': `${xAxisHeight}px 1fr`,
     }"
+    @dragover="onDragOver($event)"
+    @drop="onDrop($event)"
+    @dragleave="onDragLeave($event)"
     >
 
     <!-- include the content -->
@@ -27,6 +30,23 @@
       <slot :xScale="xAxisScale" :yScale="yAxisScale" />
     </div>
 
+    <div class="drag" v-if="drag.row > 0">
+      <slot name="drag-placeholder"
+        :xScale="xAxisScale"
+        :yScale="yAxisScale"
+        :xAxisHeight="xAxisHeight"
+        :yAxisWidth="yAxisWidth">
+        <div
+          style="border: dashed 2px rgba(0, 0, 0, 0.5); position: absolute; z-index: 999"
+          :style="{
+            top: (drag.row * yAxisScale + xAxisHeight) + 'px',
+            height: yAxisScale + 'px',
+            left: (drag.start / 3600e3 * xAxisScale + yAxisWidth) + 'px',
+            width: ((drag.end - drag.start) / 3600e3 * xAxisScale) + 'px',
+          }">
+        </div>
+      </slot>
+    </div>
   </div>
 </template>
 
@@ -65,12 +85,19 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { KeyableTrip } from '@/lib/types';
 
 export default Vue.extend({
   data () {
     return {
       scrollLeft: 0,
       scrollTop: 0,
+
+      drag: {
+        row: -1,
+        start: null,
+        end: null,
+      }
     }
   },
 
@@ -113,8 +140,57 @@ export default Vue.extend({
     scrollTo (left: number, top: number) {
       this.scrollLeft = (this.$refs.contentElem as HTMLElement).scrollLeft = left
       this.scrollTop = (this.$refs.contentElem as HTMLElement).scrollTop = top
+    },
+
+    onDragOver(event: DragEvent) {
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'move'
+
+      const data = JSON.parse(event.dataTransfer.getData('application/json'))
+      const {start, end} = data
+
+      const y = computeRelativeYPosition(event, this.$el)
+
+      // Show preview of destination
+      // Compute row, width
+      this.drag.row = Math.floor((y - this.xAxisHeight) / this.yAxisScale)
+      this.drag.start = start
+      this.drag.end = end
+    },
+
+    onDrop(event: DragEvent) {
+      const y = computeRelativeYPosition(event, this.$el)
+
+      const data = JSON.parse(event.dataTransfer.getData('application/json'))
+      const {key, tripIndex} = data
+
+      const row = Math.floor((y - this.xAxisHeight) / this.yAxisScale)
+
+      this.$store.commit('trips/reassignJob', {
+        trip: this.$store.state.trips.scheduleByTeam[key].trips[tripIndex],
+        team: this.$store.state.trips.teams[row],
+      })
+
+      this.drag.row = -1 // Disable the placeholder now
+
+      event.preventDefault()
+    },
+
+    onDragLeave(event: DragEvent) {
+      this.drag.row = -1
+      event.preventDefault()
     }
   }
 })
+
+function computeRelativeYPosition(event: MouseEvent, rootElement: Element) {
+  let y = event.offsetY
+  let node = event.target as Element
+
+  y += node.getBoundingClientRect().top -
+    rootElement.getBoundingClientRect().top
+
+  return y
+}
 
 </script>
