@@ -3,7 +3,7 @@
     :label="label"
     :value="value"
     @blur="maybeEmitPostcode"
-    @input="$emit('input', $event), updateQuery()"
+    @input="updateQuery"
     />
 </template>
 
@@ -47,9 +47,15 @@ export default Vue.extend({
   },
 
   methods: {
-    updateQuery: _.debounce(function () {
-      this.query = this.value || ''
-      if (this.query) { // TODO: inject well-known locations, e.g. CGH, SGH, OV Balestier here
+    updateQuery (value: string) {
+      this.$emit('input', value)
+      const $updateQueryDebounced = this.$updateQueryDebounced || _.debounce(this.updateQueryImpl, 200)
+      $updateQueryDebounced()
+    },
+
+    updateQueryImpl () {
+      const query = this.value || ''
+      if (query) { // TODO: inject well-known locations, e.g. CGH, SGH, OV Balestier here
         this.triggerOneMapSearch()
       } else {
         this.$emit('address-found', {
@@ -58,17 +64,22 @@ export default Vue.extend({
         })
         this.lastKnownPostcode = null
       }
-    }, 200),
-
-    maybeEmitPostcode () {
-      if (this.lastKnownPostcode && this.value !== this.lastKnownPostcode) {
-        this.$emit('input', this.lastKnownPostcode)
-      }
     },
 
-    triggerOneMapSearch () {
+    maybeEmitPostcode () {
+      if (this.$updateQueryDebounced) {
+        this.$updateQueryDebounced.cancel()
+      }
+      this.triggerOneMapSearch().then(() => {
+        if (this.lastKnownPostcode && this.value !== this.lastKnownPostcode) {
+          this.$emit('input', this.lastKnownPostcode)
+        }
+      })
+    },
+
+    triggerOneMapSearch (): Promise<any> {
       const promise = this.$oneMapPromise = fetch('https://developers.onemap.sg/commonapi/search?' + querystring.stringify({
-        searchVal: this.query,
+        searchVal: this.value,
         returnGeom: 'Y',
         getAddrDetails: 'Y',
         pageNum: 1,
@@ -96,6 +107,7 @@ export default Vue.extend({
           this.lastKnownPostcode = null
         }
       })
+      return promise
     },
   }
 })
