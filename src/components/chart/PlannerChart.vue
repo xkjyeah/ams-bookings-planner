@@ -30,22 +30,16 @@
       <slot :xScale="xAxisScale" :yScale="yAxisScale" />
     </div>
 
-    <div class="drag" v-if="drag.row > 0">
-      <slot name="drag-placeholder"
-        :xScale="xAxisScale"
-        :yScale="yAxisScale"
-        :xAxisHeight="xAxisHeight"
-        :yAxisWidth="yAxisWidth">
-        <div
-          style="border: dashed 2px rgba(0, 0, 0, 0.5); position: absolute; z-index: 999"
-          :style="{
-            top: (drag.row * yAxisScale + xAxisHeight) + 'px',
-            height: yAxisScale + 'px',
-            left: (drag.start / 3600e3 * xAxisScale + yAxisWidth) + 'px',
-            width: ((drag.end - drag.start) / 3600e3 * xAxisScale) + 'px',
-          }">
-        </div>
-      </slot>
+    <div
+      v-if="drag.row >= 0"
+      style="border: dashed 2px rgba(0, 0, 0, 0.5); position: absolute; z-index: 10; pointer-events: none"
+      :style="{
+        top: (drag.row * yAxisScale + xAxisHeight) + 'px',
+        height: yAxisScale + 'px',
+        left: (drag.start / 3600e3 * xAxisScale + yAxisWidth) + 'px',
+        width: ((drag.end - drag.start) / 3600e3 * xAxisScale) + 'px',
+      }"
+      >
     </div>
   </div>
 </template>
@@ -177,7 +171,6 @@ export default Vue.extend({
     },
 
     onDragLeave(event: DragEvent) {
-      this.drag.row = -1
       event.preventDefault()
     }
   }

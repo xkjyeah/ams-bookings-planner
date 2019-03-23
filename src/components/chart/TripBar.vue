@@ -39,7 +39,7 @@
   z-index: 2;
   border: solid 1px #404;
   color: #FFF;
-  box-sizing: border-box;
+  box-sizing: content-box;
 }
 .is-selected {
   border: solid 3px black;
