@@ -1,8 +1,12 @@
 <template>
   <v-app class="app">
-    <div class="controls">
+    <v-layout class="controls" row
+        align-content-start
+    >
+      <DatePicker style="flex: 0 0 100px" />
       <v-radio-group
-          v-model="xAxisScale">
+        row
+        v-model="xAxisScale">
         <v-radio
           label="Small"
           :value="100"
@@ -16,7 +20,10 @@
           :value="400"
           />
       </v-radio-group>
-    </div>
+      <v-btn @click="importJobs">
+        Import jobs
+      </v-btn>
+    </v-layout>
     <TripEditor class="trip-editor-window" />
     <ChartArea
       class="chart-area"
@@ -75,7 +82,9 @@ import ChartArea from '@/components/chart/ChartArea.vue';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import TripEditor from '@/components/TripEditor.vue';
+import DatePicker from '@/components/DatePicker.vue';
 import store from '@/store';
+import defaultData from '@/assets/default-data';
 
 export default Vue.extend({
   name: 'app',
@@ -107,14 +116,22 @@ export default Vue.extend({
   },
   components: {
     ChartArea,
+    DatePicker,
     TimeUpdater,
     TeamList,
     TripEditor,
+  },
+  created () {
+    store.dispatch('trips/setDate', new Date)
   },
   mounted () {
     (this.$refs['chart-area'] as any).scrollToCurrentTime()
   },
   methods: {
+    importJobs () {
+      // initialize data
+      store.commit('trips/importJobs', defaultData())
+    }
   }
 });
 </script>

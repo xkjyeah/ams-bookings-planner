@@ -7,6 +7,10 @@ export interface TripEditingState {
   tripIndexBeingEdited: number,
 }
 
+/**
+ * This stores the state needed to link the popup window with
+ * the currently being edited state.
+ */
 export default {
   namespaced: true,
   state (): TripEditingState {

@@ -4,7 +4,7 @@
     :yAxisScale="yAxisScale"
     >
     <template slot="background-svg" slot-scope="s">
-      <svg :width="chartAreaWidth + s.yAxisWidth"
+      <svg :width="0.5 * screenWidth + chartAreaWidth + s.yAxisWidth"
         :height="chartAreaHeight + s.xAxisHeight">
         <!-- <g :transform="`translate(${s.yAxisWidth} ${s.xAxisHeight})`"> -->
           <HorizontalGridLines
@@ -102,6 +102,10 @@ export default Vue.extend({
     teamSchedules () {
       return (store.getters as any)['trips/teamSchedules']
     },
+
+    screenWidth () {
+      return (store.state.screen.width)
+    }
   },
   components: {
     CurrentTime,

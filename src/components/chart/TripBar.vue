@@ -5,7 +5,8 @@
     }"
     class="trip-box"
     :class="{
-      'is-selected': isSelected
+      'is-selected': isSelected,
+      'cancelled': trip.cancelled,
     }"
     :style="{
       left: (trip.startTime / 3600e3 * xScale()) + 'px',
@@ -42,6 +43,9 @@
 }
 .is-selected {
   border: solid 3px black;
+}
+.cancelled {
+  text-decoration: line-through;
 }
 </style>
 

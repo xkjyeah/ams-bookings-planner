@@ -1,6 +1,5 @@
-let counter = 0
 
 export default function () {
-  counter += 1
-  return 'id_' + (counter | 0)
+  return Date.now().toString(35).padStart(10, 'z') +
+    Math.floor(Math.random() * 2e9).toString(35).padStart(7, 'z')
 }

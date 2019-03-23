@@ -5,6 +5,11 @@
       @click="$store.commit('tripEditing/editTrip', null)"
       ><v-icon>close</v-icon>
     </v-btn>
+    <v-btn
+      @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
+      >
+      {{tripBeingEdited.cancelled ? 'Restore' : 'Cancel'}}
+    </v-btn>
     <h2>
       {{tripBeingEdited.description}}
     </h2>

@@ -25,7 +25,6 @@ import Vue from 'vue'
 import _ from 'lodash'
 // import axios from 'axios'
 import querystring from 'querystring'
-import uuid4 from 'uuid4'
 import Vault from '@/vault'
 import singaporeColors,{ LatLng } from '@/lib/singaporeColors'
 
@@ -205,11 +204,11 @@ export default Vue.extend({
           this.$sessionToken = null
         })
       } else if (r.type === 'DESCRIPTION') {
-        this.$gmapApiPromiseLazy().then((google) => {
+        this.$gmapApiPromiseLazy().then((google: any) => {
           const geocoder = new google.maps.Geocoder
           geocoder.geocode({
             address: r.text
-          }, (results, status) => {
+          }, (results: google.maps.GeocoderResult[], status: google.maps.GeocoderStatus) => {
             if (results.length > 0) {
               console.log('emit descr', r.text, results)
               this.$emit('input', {

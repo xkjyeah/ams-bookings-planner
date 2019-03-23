@@ -1,6 +1,5 @@
 // Some silly implementation that tries to allocate a color to every lat-lng.
-
-export interface LatLng {lat: number, lng: number}
+import {LatLng} from '@/lib/types'
 
 // These are rough boundaries. Actual lat-lngs can exceed these values
 const MAX_LAT = 1.45

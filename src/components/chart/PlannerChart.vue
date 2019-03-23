@@ -62,7 +62,7 @@
     grid-column: 1;
     grid-row: 2;
     overflow: hidden; // fixme: need to deal with offsets from content
-    z-index: 99;
+    z-index: 3;
   }
 
   .x-axis {
@@ -72,7 +72,7 @@
     top: 0;
     position: sticky;
     overflow: hidden; // fixme: need to deal with offsets from content
-    z-index: 99;
+    z-index: 3;
   }
 
   .content {
