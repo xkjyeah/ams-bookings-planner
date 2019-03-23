@@ -12,17 +12,19 @@
     "@types/dateformat": "^3.0.0",
     "@types/googlemaps": "^3.30.16",
     "@types/lodash": "^4.14.119",
+    "@types/node": "^11.11.6",
     "dateformat": "^3.0.3",
+    "firebase": "^5.8.6",
     "lodash": "^4.17.11",
     "material-design-icons-iconfont": "^4.0.3",
     "node-sass": "^4.11.0",
     "sass-loader": "^7.1.0",
-    "vue": "^2.5.17",
+    "vue": "^2.6.10",
     "vue-class-component": "^6.0.0",
     "vue-property-decorator": "^7.0.0",
     "vue2-google-maps": "^0.10.5",
     "vuedraggable": "^2.17.0",
-    "vuetify": "^1.5.0",
+    "vuetify": "^1.5.7",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
@@ -35,6 +37,6 @@
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
     "typescript": "^3.0.0",
-    "vue-template-compiler": "^2.5.17"
+    "vue-template-compiler": "^2.6.10"
   }
 }
