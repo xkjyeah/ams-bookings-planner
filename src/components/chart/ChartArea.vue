@@ -32,7 +32,10 @@
           left: (s.scale * i) + 'px',
           bottom: '0',
           position: 'absolute',
-        }">
+          width: xAxisScale + 'px',
+        }"
+        style="cursor: pointer;"
+        @click="scrollToTime(i * 3600e3)">
         &#x00a0;{{i}}:00
       </div>
     </template>
@@ -138,6 +141,23 @@ export default Vue.extend({
       const scrollPosition = timePosition - 0.33 * myWidth
 
       this.$el.scrollLeft = scrollPosition
+    },
+
+    scrollToTime (time: number) {
+      const myWidth = this.$el.clientWidth
+      const timePosition = time / 3600e3 * this.xAxisScale
+
+      const scrollPosition = timePosition - 0.33 * myWidth
+
+      const scrollABit = (n: number) => {
+        if (n == 10) return
+        const diff = scrollPosition - this.$el.scrollLeft
+
+        this.$el.scrollLeft = this.$el.scrollLeft + diff * 0.2
+        setTimeout(() => scrollABit(n + 1), 10)
+      }
+      scrollABit(0)
+      // this.$el.scrollLeft = scrollPosition
     },
 
     tripClicked (trip: Trip, index: number) {
