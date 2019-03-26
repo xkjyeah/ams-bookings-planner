@@ -20,6 +20,7 @@
       @input="updateTrip('description', $event)"
       rows="1"
       auto-grow
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <PostcodePicker
@@ -27,6 +28,7 @@
       :value="tripBeingEdited.startPostcode"
       @input="updateTrip('startPostcode', $event)"
       @address-found="updateTrip('startLatLng', $event.latLng), updateTrip('startAddress', $event.address)"
+      :disabled="tripBeingEdited.cancelled"
     />
     <div
       style="border-width: 2px; border-style: solid; flex: 1 1 auto"
@@ -37,6 +39,7 @@
       label="Start Location (Details)"
       :value="tripBeingEdited.startLocation"
       @input="updateTrip('startLocation', $event)"
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <PostcodePicker
@@ -44,6 +47,7 @@
       :value="tripBeingEdited.endPostcode"
       @input="updateTrip('endPostcode', $event)"
       @address-found="updateTrip('endLatLng', $event.latLng), updateTrip('endAddress', $event.address)"
+      :disabled="tripBeingEdited.cancelled"
     />
     <div
       style="border-width: 2px; border-style: solid; flex: 1 1 auto"
@@ -54,24 +58,28 @@
       label="End Location (Details)"
       :value="tripBeingEdited.endLocation"
       @input="updateTrip('endLocation', $event)"
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <DateEditor
       label="Date"
       :value="tripBeingEdited.date"
       @input="updateTrip('date', $event)"
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <TimeEditor
       label="Start Time"
       :value="tripBeingEdited.startTime"
       @input="updateTrip('startTime', $event)"
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <TimeEditor
       label="End Time"
       :value="tripBeingEdited.endTime"
       @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
+      :disabled="tripBeingEdited.cancelled"
       />
 
     <PostcodePicker />

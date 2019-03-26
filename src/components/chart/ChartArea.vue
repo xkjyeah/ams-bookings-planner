@@ -153,7 +153,7 @@ export default Vue.extend({
         if (n == 10) return
         const diff = scrollPosition - this.$el.scrollLeft
 
-        this.$el.scrollLeft = this.$el.scrollLeft + diff * 0.2
+        this.$el.scrollLeft = this.$el.scrollLeft + diff * 0.3
         setTimeout(() => scrollABit(n + 1), 10)
       }
       scrollABit(0)

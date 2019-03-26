@@ -4,6 +4,7 @@
     :value="value"
     @blur="maybeEmitPostcode"
     @input="updateQuery"
+    v-bind="$attrs"
     />
 </template>
 
