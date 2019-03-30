@@ -20,6 +20,9 @@
           :value="400"
           />
       </v-radio-group>
+      <v-btn @click="showTeamsDialog">
+        Manage teams
+      </v-btn>
       <v-btn @click="importJobs">
         Import jobs
       </v-btn>
@@ -33,6 +36,8 @@
       @trip-clicked="$store.commit('tripEditing/editTrip', $event)"
       />
     <TimeUpdater />
+    <VehiclesSync />
+    <TeamsDialog />
   </v-app>
 </template>
 
@@ -83,6 +88,8 @@ import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import TripEditor from '@/components/TripEditor.vue';
 import DatePicker from '@/components/DatePicker.vue';
+import TeamsDialog from '@/dialogs/Teams.vue';
+import VehiclesSync from '@/sync/VehiclesSync.vue';
 import store from '@/store';
 import defaultData from '@/assets/default-data';
 
@@ -119,7 +126,9 @@ export default Vue.extend({
     DatePicker,
     TimeUpdater,
     TeamList,
+    TeamsDialog,
     TripEditor,
+    VehiclesSync,
   },
   created () {
     store.dispatch('trips/setDate', new Date)
@@ -128,6 +137,9 @@ export default Vue.extend({
     (this.$refs['chart-area'] as any).scrollToCurrentTime()
   },
   methods: {
+    showTeamsDialog () {
+      store.commit('dialogs/showDialog', 'teams')
+    },
     importJobs () {
       // initialize data
       store.commit('trips/importJobs', defaultData())

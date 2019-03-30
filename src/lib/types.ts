@@ -31,5 +31,8 @@ export interface Job {
   cancelled: boolean
 }
 
+export const imputedEndTime = (trip: Trip) =>
+  trip.endTime || ((trip.startTime || 0) + 30 * 60e3)
+
 export interface JobTrip extends Trip, Job {
 }

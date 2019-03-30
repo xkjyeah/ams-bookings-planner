@@ -11,11 +11,11 @@ TODO:
 8. [X] Persisting to a backend
 9. [X] Split by origin / destination
 7. [ ] Import a bunch of regular / historical trips (for dialysis)
-10. [ ] Disable all controls in editor if trip is cancelled
+10. [X] Disable all controls in editor if trip is cancelled
 11. [ ] Migrate a trip to a different date if date changed
 12. [ ] Add additional information about driver / medic (e.g. phone number)
 13. [ ] Allow driver/medics to be imported from another day?
 14. [ ] Allow driver/medics to have starting/ending times/locations?
 15. [ ] import trips from a datastore, e.g. dialysis
-16. [ ] Create new trip. Bundle all unassigned trips to someone.
-
+16. [ ] Create new trip. Bundle all unassigned trips to a different row
+17. [ ] Show current position of ambulances

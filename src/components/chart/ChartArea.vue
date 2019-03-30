@@ -67,7 +67,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import Vue from 'vue';
-import {JobTrip, KeyableTrip, Trip} from '@/lib/types.ts';
+import {JobTrip, KeyableTrip, Trip, imputedEndTime} from '@/lib/types.ts';
 import {TripsState, tripKey} from '@/store/trips.ts';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
@@ -169,7 +169,7 @@ export default Vue.extend({
         'application/json',
         JSON.stringify({
           start: trip.startTime,
-          end: trip.endTime || ((trip.startTime || 0) + 30 * 60e3),
+          end: imputedEndTime(trip),
           key: tripKey(trip),
           tripIndex,
         }))

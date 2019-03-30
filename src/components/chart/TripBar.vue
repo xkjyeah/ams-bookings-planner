@@ -42,7 +42,7 @@
   box-sizing: content-box;
 }
 .is-selected {
-  border: solid 3px black;
+  box-shadow: 0px 0px 4px #009;
 }
 .cancelled {
   text-decoration: line-through;
@@ -51,7 +51,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import {JobTrip} from '@/lib/types.ts';
+import {JobTrip, imputedEndTime} from '@/lib/types.ts';
 import singaporeColors from '@/lib/singaporeColors';
 
 export default Vue.extend({
@@ -97,7 +97,7 @@ export default Vue.extend({
     presumedDuration (trip: JobTrip) {
       return (trip.endTime !== null && trip.startTime !== null)
         ? (trip.endTime - trip.startTime)
-        : 30 * 60e3
+        : imputedEndTime(trip)
     }
   }
 })

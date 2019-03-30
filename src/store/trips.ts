@@ -1,4 +1,4 @@
-import {Job, Trip, KeyableTrip, LatLng} from '@/lib/types'
+import {Job, Trip, KeyableTrip, LatLng, imputedEndTime} from '@/lib/types'
 import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
@@ -312,7 +312,6 @@ function generateSchedule(
   teams: KeyableTrip[],
   trips: Trip[]
 ): [KeyableTrip[], ScheduleByTeam] {
-  const tripsById: {[k: string]: Trip} = _.keyBy(trips, 'id')
   const teamByKey = _.mapValues(
     _.keyBy(
       teams,
@@ -352,6 +351,36 @@ function generateSchedule(
     newTeams,
     schedule,
   ]
+}
+
+/**
+ * For trips that cannot be allocated for some reason to a team,
+ * pack them in such a way
+ */
+function packTrips(trips: Trip[]): Trip[][] {
+  const arrayOfTrips: Trip[][] = []
+
+  const last = <T>(t: T[]) => t[t.length - 1]
+
+  const sortedTrips = _.sortBy(trips, (t: Trip) => t.startTime)
+
+  const conflictsWith = (a: Trip, b: Trip) => {
+    return Math.min(imputedEndTime(a), imputedEndTime(b)) <=
+      Math.max(a.startTime, b.startTime)
+  }
+
+  for (let trip of sortedTrips) {
+    const nonConflicting = arrayOfTrips.find(trips =>
+      !conflictsWith(trip, last(trips))
+    )
+    if (!nonConflicting) {
+      arrayOfTrips.push([trip])
+    } else {
+      nonConflicting.push(trip)
+    }
+  }
+
+  return arrayOfTrips
 }
 
 // TODO: We may want to partition by trips by date, and fetch them all
