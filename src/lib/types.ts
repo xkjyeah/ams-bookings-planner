@@ -2,6 +2,7 @@
 export interface KeyableTrip {
   driver: string | null,
   medic: string | null,
+  vehicle: string | null,
 }
 
 export interface LatLng {lat: number, lng: number}

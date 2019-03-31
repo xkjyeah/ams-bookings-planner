@@ -124,6 +124,7 @@ export default {
       // FIXME: add checks to ensure teams don't disappear
       // and are not duplicated
       state.teams = teams
+      syncTeams(new Date(state.timestamp), state.teams)
     },
 
     importJobs (state: TripsState, jobs: Job[]) {
