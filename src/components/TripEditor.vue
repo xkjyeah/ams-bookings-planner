@@ -1,6 +1,6 @@
 <template>
   <!-- FIXME: make this buffered? -->
-  <div v-if="tripBeingEdited">
+  <div v-if="tripBeingEdited" :key="tripBeingEdited.id">
     <v-btn icon
       @click="$store.commit('tripEditing/editTrip', null)"
       ><v-icon>close</v-icon>
