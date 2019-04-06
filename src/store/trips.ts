@@ -39,7 +39,7 @@ type ScheduleData = {
   trips: Trip[],
   rows: number[][],
 }
-type ProcessedScheduleData = {
+export type ProcessedScheduleData = {
   trips: Trip[],
   tripIndices: number[],
   row: number,
@@ -74,6 +74,10 @@ export default {
   getters: {
     trips (state: TripsState) {
       return _
+    },
+
+    rowCount (state: TripsState) {
+      return _.sumBy(state.teams, team => state.scheduleByTeam[tripKey(team)].rows.length)
     },
 
     teamIndexForRow (state: TripsState): ((i: number) => number) {

@@ -110,8 +110,7 @@ export default Vue.extend({
     },
 
     chartAreaHeight () {
-      return ((store.state as any).trips as TripsState)
-        .teams.length * this.yAxisScale
+      return store.getters['trips/rowCount'] * this.yAxisScale
     },
 
     trips (): Array<JobTrip> {

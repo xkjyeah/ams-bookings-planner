@@ -1,6 +1,7 @@
 <template>
 <g>
-  <line v-for="i in range"
+  <line v-for="([team, data], i) in teamSchedules"
+    v-if="data.row === data.rowCount - 1"
     :key="i"
     x1="0" :x2="width"
     :y1="(i + 1) * rowHeight"
@@ -14,14 +15,12 @@
 <script lang="ts">
 import Vue from 'vue'
 import _ from 'lodash'
+import {ProcessedScheduleData} from '@/store/trips'
+import {Team} from '@/lib/types'
 
 export default Vue.extend({
   props: {
     rowHeight: {
-      type: Number,
-      required: true,
-    },
-    n: {
       type: Number,
       required: true,
     },
@@ -31,8 +30,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    range (): Array<Number> {
-      return _.range(0, this.n)
+    teamSchedules (): [Team, ProcessedScheduleData][] {
+      return this.$store.getters['trips/teamSchedules']
     }
   }
 })

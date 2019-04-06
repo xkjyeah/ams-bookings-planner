@@ -9,7 +9,6 @@
         <!-- <g :transform="`translate(${s.yAxisWidth} ${s.xAxisHeight})`"> -->
           <HorizontalGridLines
             :rowHeight="yAxisScale"
-            :n="teamSchedules.length"
             :width="chartAreaWidth"
           />
           <VerticalGridLines
@@ -104,8 +103,7 @@ export default Vue.extend({
     },
 
     chartAreaHeight () {
-      return ((store.state as any).trips as TripsState)
-        .teams.length * this.yAxisScale
+      return store.getters['trips/rowCount'] * this.yAxisScale
     },
 
     trips (): Array<JobTrip> {
