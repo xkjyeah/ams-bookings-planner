@@ -60,6 +60,13 @@
           @dragstart.native="onDragStart($event, trip, j)"
           />
       </template>
+      <template v-for="([team, data], i) in teamSchedules">
+        <VehicleMarker v-if="team.vehicle"
+          :key="i"
+          :vehicle="team.vehicle"
+          :yIndex="i"
+        />
+      </template>
     </template>
   </PlannerChart>
 </template>
@@ -76,6 +83,7 @@ import HorizontalGridLines from '@/components/chart/HorizontalGridLines.vue';
 import VerticalGridLines from '@/components/chart/VerticalGridLines.vue';
 import CurrentTime from '@/components/chart/CurrentTime.vue';
 import TripBar from '@/components/chart/TripBar.vue';
+import VehicleMarker from '@/components/chart/VehicleMarker.vue';
 import store from '@/store';
 
 export default Vue.extend({
@@ -117,6 +125,7 @@ export default Vue.extend({
     TimeUpdater,
     TeamList,
     TripBar,
+    VehicleMarker,
     VerticalGridLines
   },
   watch: {

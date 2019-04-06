@@ -1,4 +1,4 @@
-
+import _ from 'lodash'
 
 export interface VehicleStatus {
   created: number,
@@ -21,6 +21,12 @@ export default {
   state (): VehiclesState {
     return {
       vehicles: []
+    }
+  },
+
+  getters: {
+    vehiclesById(state: VehiclesState) {
+      return _.keyBy(state.vehicles, 'registrationNumber')
     }
   },
 

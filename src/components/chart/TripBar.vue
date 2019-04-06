@@ -95,9 +95,7 @@ export default Vue.extend({
 
   methods: {
     presumedDuration (trip: JobTrip) {
-      return (trip.endTime !== null && trip.startTime !== null)
-        ? (trip.endTime - trip.startTime)
-        : imputedEndTime(trip)
+      return imputedEndTime(trip) - trip.startTime
     }
   }
 })

@@ -22,7 +22,8 @@
         {{vehicle.registrationNumber}}
       </span>
       <h1>Teams</h1>
-      <div v-for="(team, i) in teams" :key="team.driver + ',' + team.name" class="team">
+      <div v-for="(team, i) in teams" :key="team.driver + ',' + team.medic" class="team">
+        <button @click="dropTeam(i)">X</button>
         <DragDestination
           @drop="updateTeam(i, 'driver', $event)"
           expectType="text/member-drag">
@@ -210,6 +211,13 @@ export default Vue.extend({
           ...current,
           [known]: (known === 'vehicle' ? vehicle : member)
         }])
+        .concat(this.teams.slice(index + 1))
+      )
+    },
+
+    dropTeam(index: number) {
+      store.commit('trips/updateTeams',
+        this.teams.slice(0, index)
         .concat(this.teams.slice(index + 1))
       )
     },

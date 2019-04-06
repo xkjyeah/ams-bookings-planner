@@ -296,6 +296,7 @@ function readTeams(date: Date): Promise<KeyableTrip[]> {
       .map(teamRaw => ({
         driver: teamRaw.driver || null,
         medic: teamRaw.medic || null,
+        vehicle: teamRaw.vehicle || null,
       }))
   })
 }
@@ -333,8 +334,8 @@ function generateSchedule(
   const teamsToAppend = Object.keys(tripsByKey)
     .filter(key => !(key in teamByKey))
     .map(key => {
-      const {driver, medic} = tripsByKey[key][0]
-      return {driver, medic}
+      const {driver, medic, vehicle} = tripsByKey[key][0]
+      return {driver, medic, vehicle}
     })
 
   const newTeams = teams.concat(teamsToAppend)
