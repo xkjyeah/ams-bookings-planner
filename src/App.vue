@@ -35,6 +35,15 @@
       :yAxisScale="yAxisScale"
       @trip-clicked="$store.commit('tripEditing/editTrip', $event)"
       />
+    <v-btn
+      @click="showNewTripDialog"
+      dark
+      fab
+      color="pink"
+      style="bottom: 1em; right: 2em; position: absolute"
+    >
+      <v-icon>add</v-icon>
+    </v-btn>
     <TimeUpdater />
     <VehiclesSync />
     <TeamsDialog />
@@ -159,12 +168,27 @@ export default Vue.extend({
     store.dispatch('trips/setDate', new Date)
   },
   mounted () {
-    (this.$refs['chart-area'] as any).scrollToCurrentTime()
+    this.scrollToCurrentTime()
   },
   methods: {
+    scrollToCurrentTime () {
+      (this.$refs['chart-area'] as any).scrollToCurrentTime()
+    },
     showTeamsDialog () {
       store.commit('dialogs/showDialog', 'teams')
     },
+
+    showNewTripDialog () {
+      const midnight = new Date
+      midnight.setHours(0, 0, 0, 0)
+      const delayedTime = (Date.now() - midnight.getTime()) + 10 * 60e3
+      const alignedTime = Math.ceil(delayedTime / 5 / 60e3) * 5 * 60e3
+      store.dispatch('tripEditing/createNewTripAtTime', {
+        time: alignedTime,
+      })
+      this.scrollToCurrentTime()
+    },
+
     importJobs () {
       // initialize data
       store.commit('trips/importJobs', defaultData())

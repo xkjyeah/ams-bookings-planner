@@ -10,6 +10,12 @@
       >
       {{tripBeingEdited.cancelled ? 'Restore' : 'Cancel'}}
     </v-btn>
+    <v-btn
+      v-if="deleteAllowed"
+      @click="$store.dispatch('tripEditing/deleteTrip')"
+      >
+      Delete
+    </v-btn>
     <h2>
       {{tripBeingEdited.description}}
     </h2>
@@ -108,7 +114,12 @@ export default Vue.extend({
       return this.$store.getters['tripEditing/tripBeingEdited'] as Trip
     },
 
-    singaporeColors: () => singaporeColors
+    singaporeColors: () => singaporeColors,
+
+    deleteAllowed (): Boolean {
+      const now = this.$store.state.time.time
+      return (now - this.tripBeingEdited.created) < 15 * 60e3
+    }
   },
 
   methods: {

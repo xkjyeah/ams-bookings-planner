@@ -19,5 +19,5 @@ TODO:
 15. [ ] import trips from a datastore, e.g. dialysis
 16. [ ] Create new trip. Bundle all unassigned trips to a different row
 17. [X] Show current position of ambulances
-18. [ ] Adjust height of chart for multiple rows
-19. [ ] Hide gridlines for multiple rows
+18. [X] Adjust height of chart for multiple rows
+19. [X] Hide gridlines for multiple rows

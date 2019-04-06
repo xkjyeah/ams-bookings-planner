@@ -1,6 +1,8 @@
 import {Job, Trip, KeyableTrip} from '@/lib/types'
 import trips, { TripsState, tripKey } from './trips'
 import assert from 'assert'
+import * as Vuex from 'vuex'
+import uniqueId from '@/lib/uniqueId';
 
 export interface TripEditingState {
   teamBeingEdited: KeyableTrip | null,
@@ -74,6 +76,44 @@ export default {
         },
         {root: true}
       )
+    },
+
+    deleteTrip(context: Vuex.ActionContext<TripEditingState, {}>) {
+      context.commit('trips/deleteTrip', {
+        team: context.state.teamBeingEdited,
+        tripIndex: context.state.tripIndexBeingEdited,
+      }, {root: true})
+      context.commit('tripEditing/editTrip', null, {root: true})
+    },
+
+    createNewTripAtTime(
+      context: Vuex.ActionContext<TripEditingState, {}>,
+      options: {time: number},
+    ) {
+      const trip: Trip = {
+        id: uniqueId(),
+        driver: null,
+        medic: null,
+        startTime: options.time,
+        endTime: null,
+        startPostcode: null,
+        endPostcode: null,
+        startAddress: null,
+        endAddress: null,
+        startLocation: null,
+        endLocation: null,
+        startLatLng: null,
+        endLatLng: null,
+        created: Date.now(),
+      }
+
+      context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})
+      context.commit('tripEditing/editTrip', {
+        team: {driver: null, medic: null},
+        index: context.rootState.trips.scheduleByTeam[
+          tripKey(trip)
+        ].trips.length - 1
+      }, {root: true})
     }
   }
 }

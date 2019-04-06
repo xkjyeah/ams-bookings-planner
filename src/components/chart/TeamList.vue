@@ -2,8 +2,8 @@
 <div>
   <!-- Draggable stuff -->
   <transition-group name="team-list">
-    <div v-for="(team_data, i) in teamSchedules"
-      :key="`${team_data[0].driver},${team_data[0].medic},${team_data[1].row}`"
+    <div v-for="([team, data], i) in teamSchedules"
+      :key="`${team.driver},${team.medic},${data.row}`"
       :style="{
         'text-align': 'right',
         left: '0',
@@ -21,7 +21,12 @@
       @dragstart="onDragStart($event, i)"
       @dragover="onDragOver($event, i)"
       >
-      {{team_data[0].driver}}, {{team_data[0].medic}}
+      <template v-if="team.driver || team.medic">
+        {{team.driver}}, {{team.medic}}
+      </template>
+      <template v-else>
+        <em class="not-assigned">Not assigned</em>
+      </template>
     </div>
   </transition-group>
 
@@ -50,6 +55,9 @@
 }
 .is-dragged {
   opacity: 0.4;
+}
+.not-assigned {
+  color: #CCC;
 }
 </style>
 

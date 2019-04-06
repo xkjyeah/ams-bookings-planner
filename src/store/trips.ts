@@ -6,6 +6,7 @@ import {db} from '@/lib/firebase'
 import * as Firebase from 'firebase'
 import dateformat from 'dateformat';
 import querystring from 'querystring';
+import Vue from 'vue';
 
 function makeTripTeamKey(trip: KeyableTrip) {
   if (!trip) return null
@@ -77,7 +78,12 @@ export default {
     },
 
     rowCount (state: TripsState) {
-      return _.sumBy(state.teams, team => state.scheduleByTeam[tripKey(team)].rows.length)
+      return _.sumBy(
+        state.teams,
+        team => state.scheduleByTeam[tripKey(team)]
+          ? state.scheduleByTeam[tripKey(team)].rows.length
+          : 0
+        )
     },
 
     teamIndexForRow (state: TripsState): ((i: number) => number) {
@@ -167,6 +173,32 @@ export default {
         state.teams.splice(options.newIndex, 0, ...spliced)
       }
       syncTeams(new Date(state.timestamp), state.teams)
+    },
+
+    assignNewlyCreatedJob (state: TripsState, options: {trip: Trip}) {
+      if (state.savesDisabled) return
+
+      const {trip} = options
+      const toSchedule = state.scheduleByTeam[tripKey(trip)]
+
+      // If team doesn't exist, create the team?
+      if (toSchedule) {
+        toSchedule.trips.push(trip)
+        toSchedule.rows = packTrips(toSchedule.trips)
+      } else {
+        const team = {
+          driver: trip.driver,
+          medic: trip.medic,
+          vehicle: null,
+        }
+        state.teams.splice(0, 0, team)
+        Vue.set(state.scheduleByTeam, tripKey(team), {
+          trips: [trip],
+          rows: [[0]],
+        })
+      }
+
+      syncTrip(new Date(state.timestamp), trip)
     },
 
     reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip | null}) {
@@ -275,6 +307,14 @@ export default {
       }
     },
 
+    deleteTrip(state: TripsState, options: {team: KeyableTrip, tripIndex: number}) {
+      const schedule = state.scheduleByTeam[tripKey(options.team)]
+      const trip = schedule.trips[options.tripIndex]
+      schedule.trips.splice(options.tripIndex, 1)
+      schedule.rows = packTrips(schedule.trips)
+      syncDeleteTrip(new Date(state.timestamp), trip)
+    },
+
     _setTimestamp(state: TripsState, timestamp: number) {
       state.timestamp = timestamp
     },
@@ -368,7 +408,7 @@ function deserializeArray(o: {[key: string]: any}): any[] {
   return keys.map(s => o[s[0]])
 }
 
-function readTeams(date: Date): Promise<KeyableTrip[]> {
+function readTeams(date: Date): Promise<Team[]> {
   return db.ref(`/teams/${formatDate(date)}`)
   .once('value')
   .then((values: Firebase.database.DataSnapshot) => {
@@ -383,12 +423,12 @@ function readTeams(date: Date): Promise<KeyableTrip[]> {
 }
 
 function generateSchedule(
-  teams: KeyableTrip[],
+  teams: Team[],
   trips: Trip[]
 ): [KeyableTrip[], ScheduleByTeam] {
   const teamByKey = _.mapValues(
     _.keyBy(
-      teams,
+      teams.filter(t => t.driver || t.medic),
       tripKey
     ),
     team => ({ driver: team.driver, medic: team.medic })
@@ -400,14 +440,14 @@ function generateSchedule(
 
   // If there are trips with team not in teams,
   // add to teams
-  const teamsToAppend = Object.keys(tripsByKey)
+  const teamsToPrepend: Team[] = Object.keys(tripsByKey)
     .filter(key => !(key in teamByKey))
     .map(key => {
       const {driver, medic} = tripsByKey[key][0]
       return {driver, medic, vehicle: null}
     })
 
-  const newTeams = teams.concat(teamsToAppend)
+  const newTeams = teamsToPrepend.concat(teams)
 
   const schedule: {[k: string]: ScheduleData} = _.fromPairs(
     newTeams.map((team): [string, ScheduleData] => {
@@ -472,6 +512,10 @@ function syncTrip(date: Date, trip: Trip) {
   trip.id = trip.id || uniqueId()
   db.ref(`/trips/${formatDate(date)}/${trip.id}`).set(trip)
 }
+function syncDeleteTrip(date: Date, trip: Trip) {
+  assert(trip.id, 'Wanted to delete a trip without an ID')
+  db.ref(`/trips/${formatDate(date)}/${trip.id}`).set(null)
+}
 
 function parseLatLng(o: any): LatLng | null {
   if (!o) return null
@@ -498,7 +542,7 @@ function readTrips(date: Date): Promise<Trip[]> {
         driver: tripRaw.driver || null,
         medic: tripRaw.medic || null,
         startTime: isFinite(tripRaw.startTime)
-          ? parseInt(tripRaw.startTime)
+          ? Math.max(0, Math.min(27 * 3600e3, parseInt(tripRaw.startTime)))
           : 12 * 3600e3,
         endTime: isFinite(tripRaw.endTime)
           ? parseInt(tripRaw.endTime)
@@ -518,6 +562,7 @@ function readTrips(date: Date): Promise<Trip[]> {
           ? parseInt(tripRaw.price)
           : null,
         cancelled: tripRaw.cancelled || false,
+        created: tripRaw.created || Date.now(),
       }))
   })
 }

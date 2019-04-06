@@ -25,6 +25,8 @@ export interface Trip {
   endLocation: string | null,
   startLatLng: LatLng | null,
   endLatLng: LatLng | null,
+
+  created: number,
 }
 export interface Job {
   trip: Trip,

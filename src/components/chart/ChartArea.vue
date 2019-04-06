@@ -5,7 +5,9 @@
     >
     <template slot="background-svg" slot-scope="s">
       <svg :width="0.5 * screenWidth + chartAreaWidth + s.yAxisWidth"
-        :height="chartAreaHeight + s.xAxisHeight">
+        :height="chartAreaHeight + s.xAxisHeight"
+        @dblclick="createNewTrip"
+      >
         <!-- <g :transform="`translate(${s.yAxisWidth} ${s.xAxisHeight})`"> -->
           <HorizontalGridLines
             :rowHeight="yAxisScale"
@@ -184,6 +186,27 @@ export default Vue.extend({
         }))
     },
 
+    createNewTrip (event: MouseEvent) {
+      event.preventDefault()
+
+      const alignedStartTime = Math.floor(
+        event.offsetX / this.xAxisScale / 0.25
+      ) * .25 * 3600e3
+      this.$store.dispatch('tripEditing/createNewTripAtTime', {
+        time: alignedStartTime
+      })
+    },
   }
 });
+
+function computeRelativeXPosition(event: MouseEvent, rootElement: Element) {
+  let x = event.offsetX
+  let node = event.target as Element
+
+  x += node.getBoundingClientRect().top -
+    rootElement.getBoundingClientRect().top
+
+  return x
+}
+
 </script>
