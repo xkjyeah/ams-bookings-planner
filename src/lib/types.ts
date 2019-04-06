@@ -2,6 +2,9 @@
 export interface KeyableTrip {
   driver: string | null,
   medic: string | null,
+}
+
+export type Team = KeyableTrip & {
   vehicle: string | null,
 }
 

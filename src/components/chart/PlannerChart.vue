@@ -80,6 +80,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { KeyableTrip } from '@/lib/types';
+import store from '@/store';
 
 export default Vue.extend({
   data () {
@@ -147,7 +148,7 @@ export default Vue.extend({
 
       // Show preview of destination
       // Compute row, width
-      this.drag.row = Math.floor(y / this.yAxisScale)
+      this.drag.row = this.$store.getters['trips/canonicalOffsetForRow'](Math.floor(y / this.yAxisScale))
       this.drag.start = start
       this.drag.end = end
     },
@@ -162,7 +163,7 @@ export default Vue.extend({
 
       this.$store.commit('trips/reassignJob', {
         trip: this.$store.state.trips.scheduleByTeam[key].trips[tripIndex],
-        team: this.$store.state.trips.teams[row],
+        team: this.$store.getters['trips/teamForRow'](row),
       })
 
       this.drag.row = -1 // Disable the placeholder now

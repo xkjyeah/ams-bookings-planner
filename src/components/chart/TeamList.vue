@@ -3,7 +3,7 @@
   <!-- Draggable stuff -->
   <transition-group name="team-list">
     <div v-for="(team_data, i) in teamSchedules"
-      :key="`${team_data[0].driver}, ${team_data[0].medic}`"
+      :key="`${team_data[0].driver},${team_data[0].medic},${team_data[1].row}`"
       :style="{
         'text-align': 'right',
         left: '0',
@@ -18,7 +18,6 @@
 
       draggable
       @drop="onDrop($event, 1)"
-      @dragend="onDragEnd($event, i)"
       @dragstart="onDragStart($event, i)"
       @dragover="onDragOver($event, i)"
       >
@@ -96,7 +95,7 @@ export default Vue.extend({
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.dropEffect = "move"
       // Firefox insists on this to activate the drag
-      e.dataTransfer.setData('text/my-drag', 'dummy')
+      e.dataTransfer.setData('text/team-reorder-drag', 'dummy')
       ;(this as any as TeamListData).dragIndex = index
       ;(this as any as TeamListData).isDragging = true
     },
@@ -114,7 +113,7 @@ export default Vue.extend({
     onDragOver (e: DragEvent, index: number): boolean {
       if (!e.dataTransfer) throw new Error('Unexpected null dataTransfer')
 
-      if (!e.dataTransfer.types.includes('text/my-drag')) {
+      if (!e.dataTransfer.types.includes('text/team-reorder-drag')) {
         return true
       }
       e.preventDefault()
@@ -128,6 +127,20 @@ export default Vue.extend({
     },
     onDrop (e: DragEvent, index: number) {
       e.preventDefault()
+
+      if (!e.dataTransfer.types.includes('text/team-reorder-drag')) {
+        return true
+      }
+
+      if ((this as any as TeamListData).destinationIndex < 0) return
+
+      this.$store.commit('trips/reorderTeam', {
+        oldIndex: this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).dragIndex),
+        newIndex: this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).destinationIndex)
+      })
+
+      ;(this as any as TeamListData).isDragging = false
+      ;(this as any as TeamListData).dragIndex = -1
     }
   }
 })

@@ -13,6 +13,7 @@
       :style="{
         left: leftPosition,
         top: topPosition,
+        height: height,
         'background-color': locationGradient,
         'border-radius': '1em'
       }">
@@ -37,7 +38,6 @@
 <style lang="scss" scoped>
 .vehicle-marker {
   width: 1em;
-  height: 1em;
   position: absolute;
   overflow: hidden;
   font-family: Arial, sans-serif;
@@ -67,6 +67,10 @@ export default Vue.extend({
   props: {
     vehicle: {
       type: String,
+      required: true,
+    },
+    rowCount: {
+      type: Number,
       required: true,
     },
     yIndex: {
@@ -107,9 +111,14 @@ export default Vue.extend({
     },
 
     topPosition (): string {
-      const centreY = ((this.yIndex + 0.5) * this.yScale()) + 'px'
-      return `calc(${centreY} - 0.75em)`
+      const centreY = (this.yIndex * this.yScale()) + 'px'
+      return `calc(${centreY} + 0.25em)`
     },
+
+    height (): string {
+      const rowHeight = (this.rowCount * this.yScale()) + 'px'
+      return `calc(${rowHeight} - 0.5em)`
+    }
   },
 
   methods: {

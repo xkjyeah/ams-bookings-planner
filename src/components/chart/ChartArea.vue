@@ -50,20 +50,22 @@
     <template slot-scope="s">
       <template v-for="([team, data], i) in teamSchedules">
         <TripBar v-for="(trip, j) in data.trips"
-          :isSelected="tripKey(team) === tripKey($store.state.tripEditing.teamBeingEdited) && j === $store.state.tripEditing.tripIndexBeingEdited"
+          :isSelected="tripKey(team) === tripKey($store.state.tripEditing.teamBeingEdited) &&
+            data.tripIndices[j] === $store.state.tripEditing.tripIndexBeingEdited"
           :key="trip.id"
           :trip="trip"
           :yIndexFunction="t => i"
-          @click="tripClicked(trip, j)"
+          @click="tripClicked(trip, data.tripIndices[j])"
 
           v-draggable
-          @dragstart.native="onDragStart($event, trip, j)"
+          @dragstart.native="onDragStart($event, trip, data.tripIndices[j])"
           />
       </template>
       <template v-for="([team, data], i) in teamSchedules">
-        <VehicleMarker v-if="team.vehicle"
+        <VehicleMarker v-if="team.vehicle && data.row === 0"
           :key="i"
           :vehicle="team.vehicle"
+          :rowCount="data.rowCount"
           :yIndex="i"
         />
       </template>

@@ -6,7 +6,7 @@ TODO:
 4. [X] Scaling out?
 5. [X] Use color to denote location?
 6. [X] Drag-and-drop rearrangement of trips
-  - [ ] Display the conflicts!! Conflicts are bad!
+  - [X] Display the conflicts!! Conflicts are bad!
   - [X] Scrolling messes things up!
 8. [X] Persisting to a backend
 9. [X] Split by origin / destination
@@ -18,4 +18,4 @@ TODO:
 14. [ ] Allow driver/medics to have starting/ending times/locations?
 15. [ ] import trips from a datastore, e.g. dialysis
 16. [ ] Create new trip. Bundle all unassigned trips to a different row
-17. [ ] Show current position of ambulances
+17. [X] Show current position of ambulances

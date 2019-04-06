@@ -1,5 +1,5 @@
 <template>
-  <v-tooltip
+  <UnobstrusiveTooltip
     v-bind="{
       [yIndexFunction(trip) === 0 ? 'bottom' : 'top']: true
     }"
@@ -17,7 +17,9 @@
       'background': locationGradient,
       color: trip.latLng ? '#FFF' : '#000',
     }"
-    @click.native="$emit('click', $event)"
+    @click.native="$emit('click', $event); tooltipNeeded = false"
+    @mousedown.native="tooltipNeeded = true"
+    :value="tooltipNeeded"
     >
     <div
       slot="activator">
@@ -27,7 +29,7 @@
       <!-- tooltip -->
       {{trip.description}}
     </span>
-  </v-tooltip>
+  </UnobstrusiveTooltip>
 </template>
 
 <style lang="scss" scoped>
@@ -52,6 +54,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import {JobTrip, imputedEndTime} from '@/lib/types.ts';
+import UnobstrusiveTooltip from '@/components/common/UnobstrusiveTooltip.vue';
 import singaporeColors from '@/lib/singaporeColors';
 
 export default Vue.extend({
@@ -70,6 +73,16 @@ export default Vue.extend({
     yIndexFunction: {
       type: Function,
       required: true,
+    }
+  },
+
+  components: {
+    UnobstrusiveTooltip
+  },
+
+  data () {
+    return {
+      tooltipNeeded: false,
     }
   },
 

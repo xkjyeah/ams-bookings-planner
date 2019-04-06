@@ -1,4 +1,4 @@
-import {Job, Trip, KeyableTrip, LatLng, imputedEndTime} from '@/lib/types'
+import {Job, Trip, Team, KeyableTrip, LatLng, imputedEndTime, JobTrip} from '@/lib/types'
 import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
@@ -35,15 +35,24 @@ export function tripKey (trip: KeyableTrip) {
  * The mutations / actions are required to safeguard
  * modifications to ensure optimized accesses.
  */
+type ScheduleData = {
+  trips: Trip[],
+  rows: number[][],
+}
+type ProcessedScheduleData = {
+  trips: Trip[],
+  tripIndices: number[],
+  row: number,
+  rowCount: number,
+}
+
 type ScheduleByTeam = {
-  [key: string]: {
-    trips: Trip[]
-  }
+  [key: string]: ScheduleData
 }
 
 export interface TripsState {
   scheduleByTeam: ScheduleByTeam,
-  teams: KeyableTrip[],
+  teams: Team[],
   savesDisabled: Boolean,
   timestamp: number,
   inFlightPromise: Promise<any> | null,
@@ -67,11 +76,75 @@ export default {
       return _
     },
 
-    teamSchedules (state: TripsState) {
-      return state.teams.map(team => {
-        const key = tripKey(team)
-        return [team, state.scheduleByTeam[key] || {}]
-      })
+    teamIndexForRow (state: TripsState): ((i: number) => number) {
+      return (i: number) => {
+        let offset = 0
+        let index = 0
+        for (let team of state.teams) {
+          const rows = state.scheduleByTeam[tripKey(team)].rows
+          if (i < offset + rows.length) {
+            return index
+          }
+          offset += rows.length
+          index += 1
+        }
+        throw new Error(`Couldn\'t find team for row ${i}`)
+      }
+    },
+
+    teamForRow (state: TripsState): (i: number) => Team {
+      return (i: number) => {
+        let offset = 0
+        for (let team of state.teams) {
+          const rows = state.scheduleByTeam[tripKey(team)].rows
+          if (i < offset + rows.length) {
+            return team
+          }
+          offset += rows.length
+        }
+        throw new Error(`Couldn\'t find team for row ${i}`)
+      }
+    },
+
+    canonicalOffsetForRow (state: TripsState) {
+      return (i: number) => {
+        let offset = 0
+        for (let team of state.teams) {
+          const rows = state.scheduleByTeam[tripKey(team)].rows
+          if (i < offset + rows.length) {
+            return offset
+          }
+          offset += rows.length
+        }
+        throw new Error(`Couldn\'t find team for row ${i}`)
+      }
+    },
+
+    teamSchedules (state: TripsState): [KeyableTrip, ProcessedScheduleData][] {
+      const s = _.flatMap(
+        state.teams,
+        (team: Team) => {
+          const key = tripKey(team)
+          const schedule = state.scheduleByTeam[key] || {trips: [], rows: [[]]}
+
+          // FOR DEBUGGING ONLY
+          if (process.env.NODE_ENV !== 'production') {
+            if (schedule.trips.length !== _.sumBy(schedule.rows, rs => rs.length)) {
+              throw new Error('Trips length != elements in row!')
+            }
+          }
+
+          return schedule.rows.map((indices: number[], rowIndex: number): [KeyableTrip, ProcessedScheduleData] => [
+            team,
+            {
+              trips: indices.map(i => schedule.trips[i]),
+              tripIndices: indices,
+              row: rowIndex,
+              rowCount: schedule.rows.length,
+            }
+          ])
+        })
+      return s
     },
   },
 
@@ -108,6 +181,7 @@ export default {
       )
       assert(index !== -1)
       fromSchedule.trips.splice(index, 1)
+      fromSchedule.rows = packTrips(fromSchedule.trips)
 
       // re-insert
       const trip = {
@@ -116,12 +190,12 @@ export default {
         medic: options.team.medic,
       }
       toSchedule.trips.push(trip)
+      toSchedule.rows = packTrips(toSchedule.trips)
 
-      // syncSchedules(new Date(state.timestamp), state.scheduleByTeam)
       syncTrip(new Date(state.timestamp), trip)
     },
 
-    updateTeams (state: TripsState, teams: KeyableTrip[]) {
+    updateTeams (state: TripsState, teams: Team[]) {
       // FIXME: add checks to ensure teams don't disappear
       // and are not duplicated
       state.teams = teams
@@ -136,39 +210,40 @@ export default {
         const firstTrip = job.trip && {id: uniqueId(), ...job, ...job.trip}
         const secondTrip = job.secondTrip && {id: uniqueId(), ...job, ...job.secondTrip}
 
-        if (firstTrip && secondTrip) return [firstTrip, secondTrip]
-        else if (firstTrip || secondTrip) return [(firstTrip || secondTrip)]
-        else return []
+        if (firstTrip && secondTrip) return [firstTrip, secondTrip] as JobTrip[]
+        else if (firstTrip || secondTrip) return [(firstTrip || secondTrip)] as JobTrip[]
+        else return [] as JobTrip[]
       }))
 
       const teamByKey = _.mapValues(
         _.keyBy(
           trips,
           tripKey
-        ),
-        trip => ({ driver: trip.driver, medic: trip.medic })
+        ) as {[k: string]: JobTrip},
+        (trip: JobTrip) => ({ driver: trip.driver, medic: trip.medic, vehicle: null })
       )
 
       const tripsByKey = _.groupBy(
         trips,
         tripKey
-      )
+      ) as {[k: string]: JobTrip[]}
 
-      state.teams = _.values(teamByKey)
+      state.teams = _.values(teamByKey).map(s => ({...s, vehicle: null}))
       state.scheduleByTeam = _.fromPairs(
         state.teams.map(team => {
           const key = tripKey(team)
           return [
             key,
             {
-              trips: tripsByKey[key]
+              trips: tripsByKey[key],
+              rows: packTrips(tripsByKey[key]),
             }
           ]
         })
       )
       const date = new Date(state.timestamp)
       // syncSchedules(date, state.scheduleByTeam)
-      syncTeams(date, _.values(teamByKey))
+      syncTeams(date, state.teams)
       _.values(tripsByKey).forEach((trips: Trip[]) => {
         trips.forEach(trip => {
           syncTrip(date, trip)
@@ -258,7 +333,6 @@ function formatDate(date: Date) {
 }
 
 function syncTeams(date: Date, teams: KeyableTrip[]) {
-  console.log('syncTeams')
   db.ref(`/teams/${formatDate(date)}`)
     .set(serializeArray(teams))
 }
@@ -304,18 +378,6 @@ function readTeams(date: Date): Promise<KeyableTrip[]> {
   })
 }
 
-// function syncSchedules(date: Date, schedules: ScheduleByTeam) {
-//   console.log('syncSchedules')
-//   db.ref(`/schedules/${formatDate(date)}`)
-//     .set(
-//       _.mapValues(schedules, (data: {trips:Trip[]}) => {
-//         return {
-//           trips: serializeArray(data.trips.map(t => t.id))
-//         }
-//       })
-//     )
-// }
-
 function generateSchedule(
   teams: KeyableTrip[],
   trips: Trip[]
@@ -330,26 +392,28 @@ function generateSchedule(
   const tripsByKey = _.groupBy(
     trips,
     tripKey
-  )
+  ) as {[k: string]: Trip[]}
 
   // If there are trips with team not in teams,
   // add to teams
   const teamsToAppend = Object.keys(tripsByKey)
     .filter(key => !(key in teamByKey))
     .map(key => {
-      const {driver, medic, vehicle} = tripsByKey[key][0]
-      return {driver, medic, vehicle}
+      const {driver, medic} = tripsByKey[key][0]
+      return {driver, medic, vehicle: null}
     })
 
   const newTeams = teams.concat(teamsToAppend)
 
-  const schedule = _.fromPairs(
-    newTeams.map(team => {
+  const schedule: {[k: string]: ScheduleData} = _.fromPairs(
+    newTeams.map((team): [string, ScheduleData] => {
       const key = tripKey(team)
+      const trips = tripsByKey[key] || []
       return [
         key,
         {
-          trips: tripsByKey[key]
+          trips: trips,
+          rows: packTrips(trips),
         }
       ]
     })
@@ -363,29 +427,37 @@ function generateSchedule(
 
 /**
  * For trips that cannot be allocated for some reason to a team,
- * pack them in such a way
+ * pack them in such a way that there are no conflicts. Ensures
+ * at least one row will be generated
  */
-function packTrips(trips: Trip[]): Trip[][] {
-  const arrayOfTrips: Trip[][] = []
+function packTrips(trips: Trip[]): number[][] {
+  const arrayOfTrips: number[][] = []
 
   const last = <T>(t: T[]) => t[t.length - 1]
 
-  const sortedTrips = _.sortBy(trips, (t: Trip) => t.startTime)
+  const sortedTrips = _.sortBy(
+    _.range(0, trips.length),
+    (t: number) => trips[t].startTime
+  )
 
   const conflictsWith = (a: Trip, b: Trip) => {
-    return Math.min(imputedEndTime(a), imputedEndTime(b)) <=
+    return Math.min(imputedEndTime(a), imputedEndTime(b)) >
       Math.max(a.startTime, b.startTime)
   }
 
-  for (let trip of sortedTrips) {
-    const nonConflicting = arrayOfTrips.find(trips =>
-      !conflictsWith(trip, last(trips))
+  sortedTrips.forEach((tripIndex) => {
+    const nonConflicting = arrayOfTrips.find(tripIndices =>
+      !conflictsWith(trips[tripIndex], trips[last(tripIndices)])
     )
     if (!nonConflicting) {
-      arrayOfTrips.push([trip])
+      arrayOfTrips.push([tripIndex])
     } else {
-      nonConflicting.push(trip)
+      nonConflicting.push(tripIndex)
     }
+  })
+
+  if (arrayOfTrips.length === 0) {
+    arrayOfTrips.push([])
   }
 
   return arrayOfTrips
@@ -412,7 +484,7 @@ function parseLatLng(o: any): LatLng | null {
   }
 }
 
-function readTrips(date: Date): Promise<JobTrip[]> {
+function readTrips(date: Date): Promise<Trip[]> {
   return db.ref(`/trips/${formatDate(date)}`)
   .once('value')
   .then(v => {
@@ -433,6 +505,8 @@ function readTrips(date: Date): Promise<JobTrip[]> {
         endPostcode: tripRaw.endPostcode || null,
         startAddress: tripRaw.startAddress || null,
         endAddress: tripRaw.endAddress || null,
+        startLocation: tripRaw.startLocation || null,
+        endLocation: tripRaw.endLocation || null,
         startLatLng: parseLatLng(tripRaw.startLatLng),
         endLatLng: parseLatLng(tripRaw.endLatLng),
         type: tripRaw.type || '<No type>',
