@@ -17,7 +17,7 @@ TODO:
 13. [ ] Allow driver/medics to be imported from another day?
 14. [ ] Allow driver/medics to have starting/ending times/locations?
 15. [ ] import trips from a datastore, e.g. dialysis
-16. [ ] Create new trip. Bundle all unassigned trips to a different row
+16. [X] Create new trip. Bundle all unassigned trips to a different row
 17. [X] Show current position of ambulances
 18. [X] Adjust height of chart for multiple rows
 19. [X] Hide gridlines for multiple rows

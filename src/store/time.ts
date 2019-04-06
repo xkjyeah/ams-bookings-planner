@@ -12,6 +12,14 @@ export default {
     }
   },
 
+  getters: {
+    msSinceMidnight (state: TimeStoreState) {
+      const d = new Date(state.time)
+      d.setHours(0, 0, 0, 0)
+      return state.time - d.getTime()
+    }
+  },
+
   mutations: {
     updateTime (state: TimeStoreState) {
       state.time = Date.now()

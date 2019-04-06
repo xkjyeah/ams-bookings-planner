@@ -67,12 +67,12 @@
       :disabled="tripBeingEdited.cancelled"
       />
 
-    <DateEditor
+    <!-- <DateEditor
       label="Date"
       :value="tripBeingEdited.date"
       @input="updateTrip('date', $event)"
       :disabled="tripBeingEdited.cancelled"
-      />
+      /> -->
 
     <TimeEditor
       label="Start Time"

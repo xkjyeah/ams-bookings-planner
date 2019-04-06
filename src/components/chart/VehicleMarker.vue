@@ -106,7 +106,15 @@ export default Vue.extend({
     },
 
     leftPosition (): string {
-      const centreX = (this.timeSinceMidnight / 3600e3 * this.xScale()) + 'px'
+      const currentTimeOffset = this.$store.getters['time/msSinceMidnight']
+      const boundedTime = Math.min(
+        currentTimeOffset + 3600e3,
+        Math.max(
+          currentTimeOffset - 3600e3,
+          this.timeSinceMidnight
+        )
+      )
+      const centreX = (boundedTime / 3600e3 * this.xScale()) + 'px'
       return `calc(${centreX} - 0.75em)`
     },
 
