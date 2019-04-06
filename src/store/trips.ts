@@ -125,7 +125,9 @@ export default {
       // FIXME: add checks to ensure teams don't disappear
       // and are not duplicated
       state.teams = teams
-      syncTeams(new Date(state.timestamp), state.teams)
+      if (!state.savesDisabled) {
+        syncTeams(new Date(state.timestamp), state.teams)
+      }
     },
 
     importJobs (state: TripsState, jobs: Job[]) {
@@ -178,8 +180,6 @@ export default {
       state: TripsState,
       options: {team: KeyableTrip, index: number, updates: {[key: string]: any}}
     ) {
-      if (state.savesDisabled) return
-
       // FIXME: Type safety?
       const trip: any = state.scheduleByTeam[tripKey(options.team)].trips[options.index]
 
@@ -188,9 +188,12 @@ export default {
       for (let key of Object.keys(options.updates)) {
         trip[key] = options.updates[key]
       }
-      // FIXME: This is bad form! -- async actions
-      // on global state inside a synchronous fn
-      syncTrip(new Date(state.timestamp), trip)
+
+      if (!state.savesDisabled) {
+        // FIXME: This is bad form! -- async actions
+        // on global state inside a synchronous fn
+        syncTrip(new Date(state.timestamp), trip)
+      }
     },
 
     _setTimestamp(state: TripsState, timestamp: number) {
