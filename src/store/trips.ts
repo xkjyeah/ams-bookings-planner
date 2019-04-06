@@ -5,6 +5,7 @@ import assert from 'assert'
 import {db} from '@/lib/firebase'
 import * as Firebase from 'firebase'
 import dateformat from 'dateformat';
+import querystring from 'querystring';
 
 function makeTripTeamKey(trip: KeyableTrip) {
   if (!trip) return null
@@ -229,6 +230,8 @@ export default {
           context.commit('_setSchedules', schedules)
           context.commit('_setTimestamp', date.getTime())
           context.commit('_enableSaves')
+          const dateString = formatDate(date)
+          window.history.pushState(null, dateString, '#' + querystring.stringify({date: dateString}))
         }
       })
 
@@ -386,7 +389,6 @@ function packTrips(trips: Trip[]): Trip[][] {
 
 // TODO: We may want to partition by trips by date, and fetch them all
 function syncTrip(date: Date, trip: Trip) {
-  console.log('syncTrip', trip.id)
   trip.id = trip.id || uniqueId()
   db.ref(`/trips/${formatDate(date)}/${trip.id}`).set(trip)
 }

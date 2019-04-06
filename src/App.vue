@@ -80,6 +80,7 @@
 
 <script lang="ts">
 import _ from 'lodash';
+import querystring from 'querystring';
 import Vue from 'vue';
 import {JobTrip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState} from '@/store/trips.ts';
@@ -131,6 +132,31 @@ export default Vue.extend({
     VehiclesSync,
   },
   created () {
+    try {
+      const dateHash = () => {
+        const hash = querystring.parse(window.location.hash.substring(1))
+        if (hash.date) {
+          const date = new Date(hash.date)
+          return isFinite(date.getTime()) ? date : null
+        }
+      }
+
+      const handleNewDateHash = () => {
+        const d = dateHash()
+
+        if (d) {
+          store.dispatch('trips/setDate', d)
+          return true
+        }
+        return false
+      }
+
+      window.addEventListener('popstate', handleNewDateHash)
+
+      if (handleNewDateHash()) {
+        return
+      }
+    } catch {}
     store.dispatch('trips/setDate', new Date)
   },
   mounted () {
