@@ -177,7 +177,7 @@ export default Vue.extend({
 
     onDragStart(event: DragEvent, trip: Trip, tripIndex: number) {
       event.dataTransfer.setData(
-        'application/json',
+        'text/trip-reassign',
         JSON.stringify({
           start: trip.startTime,
           end: imputedEndTime(trip),
