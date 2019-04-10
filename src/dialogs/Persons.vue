@@ -42,6 +42,7 @@
               </template>
             </EditingCell>
             <EditingCell class="cell" :disabled="true">
+              {{person.created && sAgo(person.created, 'DD MMM YYYY, hh:mm:ss')}}
               {{person.updated && sAgo(person.updated, 'DD MMM YYYY, hh:mm:ss')}}
             </EditingCell>
           </div>
@@ -151,7 +152,7 @@ export default Vue.extend({
         (store.getters['vehicles/personArray'] as Person[]),
         (p: Person) => p.created < this.reference
           ? [0, p.name, null]
-          : [1, null, p.created]
+          : [1, null, -p.created]
       )
     },
 
@@ -160,6 +161,13 @@ export default Vue.extend({
         (store.getters['vehicles/personArray'] as Person[]),
         (p: Person) => p.name.toLowerCase()
       )
+    }
+  },
+
+  watch: {
+    dialogShown () {
+      // Shuffle the list every time the dialog is shown
+      this.reference = Date.now()
     }
   },
 
@@ -206,7 +214,7 @@ export default Vue.extend({
           return this.flashError('new', `This person (${name}) already exists`)
         }
 
-        store.commit('vehicles/updatePerson', {name, telephone})
+        store.commit('vehicles/updatePerson', {name, telephone, created: Date.now(), updated: Date.now()} as Person)
         this.newPerson = {name: null, telephone: null}
         this.$nextTick(() => {
           const key = name

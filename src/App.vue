@@ -35,9 +35,6 @@
           </v-list-tile>
         </v-list>
       </v-menu>
-      <v-btn @click="importJobs">
-        Import jobs
-      </v-btn>
     </v-layout>
     <TripEditor class="trip-editor-window" />
     <ChartArea

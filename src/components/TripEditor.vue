@@ -1,22 +1,5 @@
 <template>
   <div v-if="tripBeingEdited" :key="tripBeingEdited.id" class="trip-editor">
-    <v-card-title>
-      <v-btn icon
-        @click="$store.commit('tripEditing/editTrip', null)"
-        ><v-icon>close</v-icon>
-      </v-btn>
-      <v-btn
-        @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
-        >
-        {{tripBeingEdited.cancelled ? 'Restore' : 'Cancel'}}
-      </v-btn>
-      <v-btn
-        v-if="deleteAllowed"
-        @click="$store.dispatch('tripEditing/deleteTrip')"
-        >
-        Delete
-      </v-btn>
-    </v-card-title>
     <v-card-text>
       <h2>
         {{tripBeingEdited.description}}
@@ -91,7 +74,30 @@
         />
 
       <PostcodePicker />
+      <div style="text-align: right">
+        <v-btn
+          v-if="deleteAllowed"
+          color="error"
+          @click="$store.dispatch('tripEditing/deleteTrip')"
+          >
+          Delete
+        </v-btn>
+        <v-btn
+          v-else
+          color="error"
+          @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
+          >
+          {{tripBeingEdited.cancelled ? 'Restore the trip' : 'Cancel the trip'}}
+        </v-btn>
+      </div>
     </v-card-text>
+    <v-card-actions align="right">
+      <v-btn
+        color="neutral"
+        @click="$store.commit('tripEditing/editTrip', null)"
+        >Close
+      </v-btn>
+    </v-card-actions>
   </div>
 </template>
 <style scoped lang="scss">

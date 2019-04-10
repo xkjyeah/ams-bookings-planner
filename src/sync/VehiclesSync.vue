@@ -69,6 +69,7 @@ export default Vue.extend({
           name: key,
           telephone: value.telephone || null,
           updated: parseFloat(value.updated) || Date.now(),
+          created: parseFloat(value.created) || Date.now(),
         }))
         .reduce(
           (acc, v) => {

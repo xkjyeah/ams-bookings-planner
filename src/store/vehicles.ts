@@ -83,9 +83,9 @@ function syncPerson(person: Person) {
 
   db.ref(`/persons/${person.name}`)
   .set({
+    created: Date.now(),
     ...person,
     updated: Date.now(),
-    created: Date.now(),
   })
 }
 

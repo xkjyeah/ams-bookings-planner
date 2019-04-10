@@ -16,11 +16,12 @@ TODO:
   - [ ] show the next day's trips up to around... 3am?
   - [ ] save a trip to the following day, if it is past midnight
 
-12. [ ] Add additional information about driver / medic (e.g. phone number)
-13. [ ] Allow driver/medics to be imported from another day?
-14. [ ] Allow driver/medics to have starting/ending times/locations?
-
+12. [X] Add additional information about driver / medic (e.g. phone number)
+  - [ ] SMS support
+13. [ ] Allow team pairings to be imported from another day?
 15. [ ] import trips from a datastore, e.g. dialysis
+
+14. [ ] Allow driver/medics to have starting/ending times/locations?
 
 16. [X] Create new trip. Bundle all unassigned trips to a different row
 17. [X] Show current position of ambulances
