@@ -11,13 +11,13 @@ import Vue from 'vue';
 function makeTripTeamKey(trip: KeyableTrip) {
   if (!trip) return null
   if (trip.driver && trip.medic) {
-    return trip.driver.trim().toLowerCase() +
+    return trip.driver.toString().trim().toLowerCase() +
       ' ' +
-      trip.medic.trim().toLowerCase()
+      trip.medic.toString().trim().toLowerCase()
   } else if (trip.driver) {
-    return trip.driver.trim().toLowerCase()
+    return trip.driver.toString().trim().toLowerCase()
   } else if (trip.medic) {
-    return trip.medic.trim().toLowerCase()
+    return trip.medic.toString().trim().toLowerCase()
   } else {
     return null
   }
@@ -47,7 +47,7 @@ export type ProcessedScheduleData = {
   rowCount: number,
 }
 
-type ScheduleByTeam = {
+export type ScheduleByTeam = {
   [key: string]: ScheduleData
 }
 

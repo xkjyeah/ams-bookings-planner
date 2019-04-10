@@ -3,125 +3,123 @@
     :value="dialogShown"
     @input="handleDialogInput"
     @dragover="handleDialogDraggedOver"
+    scrollable
     >
     <v-card>
-      <h1>Ambulance Staff</h1>
-      <span v-for="member in defaultList"
-          :key="member"
-          class="member"
-          draggable
-          @dragstart="handleMemberDrag($event, member)">
-        {{member}}
-      </span>
-      <h1>Vehicles</h1>
-      <span v-for="vehicle in vehicles"
-          :key="vehicle.registrationNumber"
-          @dragstart="handleVehicleDrag($event, vehicle.registrationNumber)"
-          draggable
-          class="vehicle">
-        {{vehicle.registrationNumber}}
-      </span>
-      <h1>Teams</h1>
-      <div v-for="(team, i) in teams" :key="team.driver + ',' + team.medic" class="team">
-        <button @click="dropTeam(i)">X</button>
-        <DragDestination
-          @drop="updateTeam(i, 'driver', $event)"
-          expectType="text/member-drag">
-          <div class="driver" v-if="team.driver">
-            <span class="member">{{team.driver}}</span>
-          </div>
-          <div class="driver" v-else>
-            None
-          </div>
-        </DragDestination>
+      <v-card-title>Manage teams</v-card-title>
+      <v-card-text style="height: 80vh">
+        <h1>Teams</h1>
 
-        <DragDestination
-          @drop="updateTeam(i, 'medic', $event)"
-          expectType="text/member-drag">
-          <div class="medic" v-if="team.medic">
-            <span class="member">{{team.medic}}</span>
-          </div>
-          <div class="medic" v-else>
-            None
-          </div>
-        </DragDestination>
+        <!-- fixme: choose a better key -->
+        <div v-for="(team, i) in teams"
+          :key="`${team.driver},${team.medic}`"
+          class="teams-grid">
 
-        <DragDestination
-          @drop="updateTeam(i, 'vehicle', $event)"
-          expectType="text/vehicle-drag">
-          <div v-if="team.vehicle">
-            <span class="vehicle">{{team.vehicle}}</span>
+          <div class="action">
+            <span @click="dropTeam(i)" v-if="!teamHasTrips(team)">
+              <v-icon>delete</v-icon>
+            </span>
           </div>
-          <div v-else>
-            None
+
+          <EditingCell class="cell" :disabled="teamHasTrips(team)">
+            {{team.driver}}
+            <template v-slot:editor="editor">
+              <EditingDropdown
+                :items="defaultList"
+                :value="team.driver"
+                @blur="editor.blur()"
+                @input="updateTeam(i, $event, 'driver')"
+              />
+            </template>
+          </EditingCell>
+          <EditingCell class="cell" :disabled="teamHasTrips(team)">
+            {{team.medic}}
+            <template v-slot:editor="editor">
+              <EditingDropdown
+                :items="defaultList"
+                :value="team.medic"
+                @blur="editor.blur()"
+                @input="updateTeam(i, $event, 'medic')"
+              />
+            </template>
+          </EditingCell>
+          <EditingCell class="cell">
+            {{team.vehicle}}
+            <template v-slot:editor="editor">
+              <EditingDropdown
+                :items="$store.state.vehicles.vehicles.map(r => r.registrationNumber)"
+                :value="team.vehicle"
+                @blur="editor.blur()"
+                @input="updateTeam(i, $event, 'vehicle')"
+                />
+            </template>
+          </EditingCell>
+        </div>
+        <div class="teams-grid">
+
+          <div class="action">
+            (New)
           </div>
-        </DragDestination>
-      </div>
-      <div class="team">
-        <DragDestination expectType="text/member-drag"
-          @drop="createNewTeam('driver', $event)">
-          <div class="driver">
-            None
-          </div>
-        </DragDestination>
-        <DragDestination expectType="text/member-drag"
-          @drop="createNewTeam('medic', $event)">
-          <div class="medic">
-            None
-          </div>
-        </DragDestination>
-        <DragDestination expectType="text/vehicle-drag"
-          @drop="createNewTeam('vehicle', $event)">
-          <div>
-            None
-          </div>
-        </DragDestination>
-      </div>
+
+          <EditingCell class="cell">
+            <span class="placeholder">(Driver)</span>
+            <template v-slot:editor="editor">
+              <EditingDropdown
+                :items="defaultList"
+                :value="''"
+                @blur="editor.blur()"
+                @input="createNewTeam($event, 'driver')"
+              />
+            </template>
+          </EditingCell>
+          <EditingCell class="cell">
+            <span class="placeholder">(Medic)</span>
+            <template v-slot:editor="editor">
+              <EditingDropdown
+                :items="defaultList"
+                :value="''"
+                @blur="editor.blur()"
+                @input="createNewTeam($event, 'medic')"
+              />
+            </template>
+          </EditingCell>
+          <EditingCell class="cell" :disabled="true">
+            <span class="placeholder">(Vehicle)</span>
+            <template v-slot:editor="editor">
+            </template>
+          </EditingCell>
+        </div>
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 <style scoped lang="scss">
-.team {
-  border: dashed 2px #CCC;
-  display: inline-flex;
-  width: 15em;
-  margin: 0.2em 0.1em;
+.teams-grid {
+  display: flex;
+  flex-direction: row;
+  height: 2em;
 
-  & > div {
-    flex: 1 1 0;
-    border: dashed 2px #CCC;
-    margin: 0.2em 0.1em;
+  & > div.action {
+    border: dashed 1px #ccc;
+    flex: 0 0 3em;
   }
-}
-.member {
-  background: #909;
-  color: white;
-  border-radius: 0.3em;
-  padding: 0 0.3em;
-  margin: 0 0.1em;
-  display: inline-block;
-  user-select: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.vehicle {
-  background: #090;
-  color: white;
-  border-radius: 0.3em;
-  padding: 0 0.3em;
-  margin: 0 0.1em;
-  display: inline-block;
-  user-select: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  & > div.cell {
+    border: dashed 1px #ccc;
+    flex: 0 0 calc((100% - 3em) / 3);
+  }
+
+  .placeholder {
+    color: #888;
+  }
 }
 </style>
 <script lang="ts">
 import Vue from 'vue'
 import store from '@/store'
-import {TripsState} from '@/store/trips'
+import {TripsState, ScheduleByTeam, KeyableTrip, tripKey} from '@/store/trips'
 import { VehiclesState } from '@/store/vehicles';
-import DragDestination from '@/dialogs/teams/DragDestination';
+import EditingCell from '@/dialogs/teams/EditingCell';
+import EditingDropdown from '@/dialogs/teams/EditingDropdown';
 import assert from 'assert';
 
 export default Vue.extend({
@@ -139,7 +137,8 @@ export default Vue.extend({
   },
 
   components: {
-    DragDestination,
+    EditingCell,
+    EditingDropdown,
   },
 
   computed: {
@@ -151,6 +150,12 @@ export default Vue.extend({
     },
     teams () {
       return (store.state.trips as TripsState).teams || []
+    },
+    staffList (): ({text: string, value: string}[]) {
+      return this.defaultList.map(s => ({text: s, value: s}))
+    },
+    scheduleByTeam () {
+      return (store.state.trips.scheduleByTeam) as ScheduleByTeam
     },
   },
 
@@ -186,21 +191,17 @@ export default Vue.extend({
       event.dataTransfer.dropEffect = 'cancel'
     },
 
-    createNewTeam(known: 'driver' | 'medic' | 'vehicle', e: DragEvent) {
-      const member = e.dataTransfer.getData('text/member-drag')
-      const vehicle = e.dataTransfer.getData('text/vehicle-drag')
+    createNewTeam(value: string, known: 'driver' | 'medic' | 'vehicle') {
       store.commit('trips/updateTeams', this.teams.concat([
         {
-          driver: known == 'driver' ? member : null,
-          medic: known == 'medic' ? member : null,
-          vehicle: known == 'vehicle' ? vehicle : null,
+          driver: known == 'driver' ? value : null,
+          medic: known == 'medic' ? value : null,
+          vehicle: known == 'vehicle' ? value : null,
         }
       ]))
     },
 
-    updateTeam(index: number, known: 'driver' | 'medic' | 'vehicle', e: DragEvent) {
-      const member = e.dataTransfer.getData('text/member-drag')
-      const vehicle = e.dataTransfer.getData('text/vehicle-drag')
+    updateTeam(index: number, value: string, known: 'driver' | 'medic' | 'vehicle') {
       const current = this.teams[index]
 
       assert(current)
@@ -209,7 +210,7 @@ export default Vue.extend({
         this.teams.slice(0, index)
         .concat([{
           ...current,
-          [known]: (known === 'vehicle' ? vehicle : member)
+          [known]: value
         }])
         .concat(this.teams.slice(index + 1))
       )
@@ -221,6 +222,11 @@ export default Vue.extend({
         .concat(this.teams.slice(index + 1))
       )
     },
+
+    teamHasTrips(team: KeyableTrip):boolean {
+      return this.scheduleByTeam[tripKey(team)] &&
+        this.scheduleByTeam[tripKey(team)].trips.length > 0
+    }
   }
 })
 </script>

@@ -1,6 +1,9 @@
-declare module 'vuedraggable' {
+declare module 'querystring' {
   var exports: {
-    default: any
+    default: {
+      stringify: (s: {[k: string]: any}) => string,
+      parse: (s: string) => {[k: string]: any},
+    }
   }
 }
 

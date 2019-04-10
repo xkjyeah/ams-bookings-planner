@@ -1,97 +1,110 @@
 <template>
-  <!-- FIXME: make this buffered? -->
-  <div v-if="tripBeingEdited" :key="tripBeingEdited.id">
-    <v-btn icon
-      @click="$store.commit('tripEditing/editTrip', null)"
-      ><v-icon>close</v-icon>
-    </v-btn>
-    <v-btn
-      @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
-      >
-      {{tripBeingEdited.cancelled ? 'Restore' : 'Cancel'}}
-    </v-btn>
-    <v-btn
-      v-if="deleteAllowed"
-      @click="$store.dispatch('tripEditing/deleteTrip')"
-      >
-      Delete
-    </v-btn>
-    <h2>
-      {{tripBeingEdited.description}}
-    </h2>
+  <div v-if="tripBeingEdited" :key="tripBeingEdited.id" class="trip-editor">
+    <v-card-title>
+      <v-btn icon
+        @click="$store.commit('tripEditing/editTrip', null)"
+        ><v-icon>close</v-icon>
+      </v-btn>
+      <v-btn
+        @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
+        >
+        {{tripBeingEdited.cancelled ? 'Restore' : 'Cancel'}}
+      </v-btn>
+      <v-btn
+        v-if="deleteAllowed"
+        @click="$store.dispatch('tripEditing/deleteTrip')"
+        >
+        Delete
+      </v-btn>
+    </v-card-title>
+    <v-card-text>
+      <h2>
+        {{tripBeingEdited.description}}
+      </h2>
 
-    <v-textarea
-      label="Description"
-      :value="tripBeingEdited.description"
-      @input="updateTrip('description', $event)"
-      rows="1"
-      auto-grow
-      :disabled="tripBeingEdited.cancelled"
+      <v-textarea
+        label="Description"
+        :value="tripBeingEdited.description"
+        @input="updateTrip('description', $event)"
+        rows="1"
+        auto-grow
+        :disabled="tripBeingEdited.cancelled"
+        />
+
+      <PostcodePicker
+        label="Start Postcode"
+        :value="tripBeingEdited.startPostcode"
+        @input="updateTrip('startPostcode', $event)"
+        @address-found="updateTrip('startLatLng', $event.latLng), updateTrip('startAddress', $event.address)"
+        :disabled="tripBeingEdited.cancelled"
       />
+      <div
+        style="border-width: 2px; border-style: solid; flex: 1 1 auto"
+        :style="{'border-color': tripBeingEdited.startLatLng && singaporeColors(tripBeingEdited.startLatLng)}">
+        {{tripBeingEdited.startAddress}}
+      </div>
+      <v-text-field
+        label="Start Location (Details)"
+        :value="tripBeingEdited.startLocation"
+        @input="updateTrip('startLocation', $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
 
-    <PostcodePicker
-      label="Start Postcode"
-      :value="tripBeingEdited.startPostcode"
-      @input="updateTrip('startPostcode', $event)"
-      @address-found="updateTrip('startLatLng', $event.latLng), updateTrip('startAddress', $event.address)"
-      :disabled="tripBeingEdited.cancelled"
-    />
-    <div
-      style="border-width: 2px; border-style: solid; flex: 1 1 auto"
-      :style="{'border-color': tripBeingEdited.startLatLng && singaporeColors(tripBeingEdited.startLatLng)}">
-      {{tripBeingEdited.startAddress}}
-    </div>
-    <v-text-field
-      label="Start Location (Details)"
-      :value="tripBeingEdited.startLocation"
-      @input="updateTrip('startLocation', $event)"
-      :disabled="tripBeingEdited.cancelled"
+      <PostcodePicker
+        label="End Postcode"
+        :value="tripBeingEdited.endPostcode"
+        @input="updateTrip('endPostcode', $event)"
+        @address-found="updateTrip('endLatLng', $event.latLng), updateTrip('endAddress', $event.address)"
+        :disabled="tripBeingEdited.cancelled"
       />
+      <div
+        style="border-width: 2px; border-style: solid; flex: 1 1 auto"
+        :style="{'border-color': tripBeingEdited.endLatLng && singaporeColors(tripBeingEdited.endLatLng)}">
+        {{tripBeingEdited.endAddress}}
+      </div>
+      <v-text-field
+        label="End Location (Details)"
+        :value="tripBeingEdited.endLocation"
+        @input="updateTrip('endLocation', $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
 
-    <PostcodePicker
-      label="End Postcode"
-      :value="tripBeingEdited.endPostcode"
-      @input="updateTrip('endPostcode', $event)"
-      @address-found="updateTrip('endLatLng', $event.latLng), updateTrip('endAddress', $event.address)"
-      :disabled="tripBeingEdited.cancelled"
-    />
-    <div
-      style="border-width: 2px; border-style: solid; flex: 1 1 auto"
-      :style="{'border-color': tripBeingEdited.endLatLng && singaporeColors(tripBeingEdited.endLatLng)}">
-      {{tripBeingEdited.endAddress}}
-    </div>
-    <v-text-field
-      label="End Location (Details)"
-      :value="tripBeingEdited.endLocation"
-      @input="updateTrip('endLocation', $event)"
-      :disabled="tripBeingEdited.cancelled"
-      />
+      <!-- <DateEditor
+        label="Date"
+        :value="tripBeingEdited.date"
+        @input="updateTrip('date', $event)"
+        :disabled="tripBeingEdited.cancelled"
+        /> -->
 
-    <!-- <DateEditor
-      label="Date"
-      :value="tripBeingEdited.date"
-      @input="updateTrip('date', $event)"
-      :disabled="tripBeingEdited.cancelled"
-      /> -->
+      <TimeEditor
+        label="Start Time"
+        :value="tripBeingEdited.startTime"
+        @input="updateTrip('startTime', $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
 
-    <TimeEditor
-      label="Start Time"
-      :value="tripBeingEdited.startTime"
-      @input="updateTrip('startTime', $event)"
-      :disabled="tripBeingEdited.cancelled"
-      />
+      <TimeEditor
+        label="End Time"
+        :value="tripBeingEdited.endTime"
+        @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
 
-    <TimeEditor
-      label="End Time"
-      :value="tripBeingEdited.endTime"
-      @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
-      :disabled="tripBeingEdited.cancelled"
-      />
-
-    <PostcodePicker />
+      <PostcodePicker />
+    </v-card-text>
   </div>
 </template>
+<style scoped lang="scss">
+.trip-editor {
+  display: flex;
+  flex-direction: column;
 
+  .v-card__text {
+    overflow: auto;
+    flex: 1 1 auto;
+  }
+}
+</style>
 <script lang="ts">
 import Vue from 'vue'
 import { Trip } from '@/lib/types';

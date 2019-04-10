@@ -31,6 +31,9 @@
         <i>Location</i>
         {{vehicleData.location}}
       </div>
+      <div>
+        {{sAgo(vehicleData.created)}}
+      </div>
     </div>
   </v-tooltip>
 </template>
@@ -58,6 +61,7 @@ import Vue from 'vue'
 import {JobTrip, imputedEndTime} from '@/lib/types.ts';
 import singaporeColors from '@/lib/singaporeColors';
 import store from '@/store';
+import sAgo from 's-ago';
 
 export default Vue.extend({
   inject: {
@@ -126,7 +130,9 @@ export default Vue.extend({
     height (): string {
       const rowHeight = (this.rowCount * this.yScale()) + 'px'
       return `calc(${rowHeight} - 0.5em)`
-    }
+    },
+
+    sAgo: () => (d: any) => sAgo(new Date(d)),
   },
 
   methods: {

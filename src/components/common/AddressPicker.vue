@@ -98,7 +98,6 @@ export default Vue.extend({
     'value': {
       immediate: true,
       handler (v) {
-        console.log('watch value:', v, this.random)
         this.query = v && v.text
       }
     },

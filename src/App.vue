@@ -76,8 +76,6 @@
     top: 1em;
     bottom: 1em;
     width: 33vw;
-    padding: 0.5em;
-    overflow: auto;
     background: white;
     box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.5);
     z-index: 999;
