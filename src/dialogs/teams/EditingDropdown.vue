@@ -1,6 +1,7 @@
 <template>
-  <v-menu offset-y :value="showMenu" :close-on-click="false"
-     :close-on-content-click="false">
+  <v-menu offset-y bottom allow-overflow :value="showMenu"
+      :close-on-click="false"
+      :close-on-content-click="false">
     <template v-slot:activator="activator">
       <input
         type="text"
@@ -11,16 +12,18 @@
         @keydown.down="selectNext"
         @keydown.up="selectPrev"
         @keydown.enter="selectCurrent"
+        @keydown.esc="showMenu = false"
         v-bind="$attrs"
       />
     </template>
     <v-list class="list"
         ref="selectionItems">
-      <v-list-tile v-for="item in listItems" :key="item.value"
+      <div v-for="item in listItems" :key="item.value"
           :class="{active: isSelected(item)}"
-          @click.native.prevent="handleSelect(item)">
+          class="list-tile"
+          @click.prevent="handleSelect(item)">
         {{item.value}}
-      </v-list-tile>
+      </div>
     </v-list>
   </v-menu>
 </template>
@@ -34,12 +37,15 @@ input {
   border: solid 1px red;
 }
 .list {
-  max-height: 300px;
+  max-height: 200px;
   overflow-y: scroll;
 
   .active {
     background-color: #90CAF9;
   }
+}
+.list-tile {
+  padding: 0.25em;
 }
 </style>
 <script lang="ts">
@@ -61,7 +67,7 @@ export default Vue.extend({
   computed: {
     listItems (): {text: string, value: string}[] {
       const search = (this.searchInput || '').toLowerCase()
-      return (this.lowerCaseItems as string[])
+      const entries = (this.lowerCaseItems as string[])
       .map((s: string, index: number): [string, number] => [s, index])
       .filter((si: [string, number]): boolean => {
         const [s, i] = si
@@ -75,6 +81,16 @@ export default Vue.extend({
           value: (this.items as string[])[index],
         }
       })
+
+      if (!(search in this.itemsByValue)) {
+        return entries
+          .concat([{
+            text: this.searchInput || '',
+            value: this.searchInput || '',
+          }])
+      } else {
+        return entries
+      }
     },
 
     lowerCaseItems(): string[]{
@@ -82,7 +98,7 @@ export default Vue.extend({
     },
 
     itemsByValue (): {[k: string]: string} {
-      return _.keyBy(this.items, i => i)
+      return _.keyBy(this.lowerCaseItems, i => i)
     },
   },
 
@@ -90,7 +106,7 @@ export default Vue.extend({
     return {
       searchInput: null as string | null,
       showMenu: false as boolean,
-      selection: 0,
+      selection: -1,
     }
   },
 
@@ -100,7 +116,7 @@ export default Vue.extend({
     }, {immediate: true})
 
     this.$watch('listItems', (v) => {
-      this.selection = 0
+      this.selection = -1
     })
 
     this.$watch('selection', (v) => {
@@ -122,12 +138,18 @@ export default Vue.extend({
       this.$emit('input', item.value)
       this.showMenu = false
       this.searchInput = item.text
+      this.selection = -1
       this.$refs.myinput.focus()
     },
 
     handleBlur(e: FocusEvent): void {
       // user may have clicked on a list item -- so don't
       // hide the menu immediately
+      this.$emit('input', (
+        (this.selection !== -1 && this.listItems[this.selection].value) ||
+        this.searchInput ||
+        ''
+      ).trim() || null)
       setTimeout(() => {
         this.showMenu = false
         this.$emit('blur')
@@ -147,7 +169,8 @@ export default Vue.extend({
     },
 
     selectCurrent(): void {
-      if (this.selection < this.listItems.length ) {
+      if (this.selection < this.listItems.length &&
+        this.selection >= 0) {
         this.handleSelect(this.listItems[this.selection])
       }
     },

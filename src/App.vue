@@ -20,9 +20,21 @@
           :value="400"
           />
       </v-radio-group>
-      <v-btn @click="showTeamsDialog">
-        Manage teams
-      </v-btn>
+      <v-menu offset-y>
+        <template v-slot:activator="{on}">
+          <v-btn v-on="on">
+            <v-icon>settings</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-tile @click="showTeamsDialog">
+            Manage teams
+          </v-list-tile>
+          <v-list-tile @click="showPersonsDialog">
+            Manage people
+          </v-list-tile>
+        </v-list>
+      </v-menu>
       <v-btn @click="importJobs">
         Import jobs
       </v-btn>
@@ -47,12 +59,16 @@
     <TimeUpdater />
     <VehiclesSync />
     <TeamsDialog />
+    <PersonsDialog />
   </v-app>
 </template>
 
 <style lang="scss">
 .planner-chart {
   position: relative;
+}
+.placeholder {
+  color: #CCC;
 }
 </style>
 
@@ -97,6 +113,7 @@ import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import TripEditor from '@/components/TripEditor.vue';
 import DatePicker from '@/components/DatePicker.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
+import PersonsDialog from '@/dialogs/Persons.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
 import store from '@/store';
 import defaultData from '@/assets/default-data';
@@ -131,6 +148,7 @@ export default Vue.extend({
   components: {
     ChartArea,
     DatePicker,
+    PersonsDialog,
     TimeUpdater,
     TeamList,
     TeamsDialog,
@@ -174,6 +192,9 @@ export default Vue.extend({
     },
     showTeamsDialog () {
       store.commit('dialogs/showDialog', 'teams')
+    },
+    showPersonsDialog () {
+      store.commit('dialogs/showDialog', 'persons')
     },
 
     showNewTripDialog () {

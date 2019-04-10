@@ -5,7 +5,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import _ from 'lodash'
-import {VehicleStatus} from '@/store/vehicles'
+import {VehicleStatus, Person, PersonList} from '@/store/vehicles'
 import {db} from '@/lib/firebase'
 import store from '@/store'
 
@@ -43,6 +43,42 @@ export default Vue.extend({
         }))
 
       store.commit('vehicles/setVehicles', _.sortBy(vehicles, 'registrationNumber'))
+    })
+
+    db.ref('/persons')
+    .on('value', (e) => {
+      if (!e) return
+
+      const re = /^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/
+      const parseDate = (s: string) => {
+        const parts = s.match(re)
+        if (!parts) return null
+        return new Date(
+          parseInt(parts[1]),
+          parseInt(parts[2]) - 1,
+          parseInt(parts[3]),
+          parseInt(parts[4]),
+          parseInt(parts[5]),
+          parseInt(parts[6]),
+        ).getTime()
+      }
+
+      const value = e.val()
+      const persons: PersonList = Object.entries(value || {})
+        .map(([key, value]: [string, any]): Person => ({
+          name: key,
+          telephone: value.telephone || null,
+          updated: parseFloat(value.updated) || Date.now(),
+        }))
+        .reduce(
+          (acc, v) => {
+            acc[v.name] = v
+            return acc
+          },
+          {} as {[k: string]: Person}
+        )
+
+      store.commit('vehicles/setPersons', persons)
     })
   },
 })

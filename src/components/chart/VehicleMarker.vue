@@ -1,11 +1,12 @@
 <template>
-  <v-tooltip
+  <VehicleTooltip
     v-if="vehicleData"
+    :value="vehicleData"
     v-bind="{
       [yIndex === 0 ? 'bottom' : 'top']: true
     }"
     >
-    <div slot="activator"
+    <div
       class="vehicle-marker"
       :class="{
         stale: isStale
@@ -19,23 +20,7 @@
       }">
       &nbsp;
     </div>
-    <div>
-      <div>
-        <b>{{vehicleData.registrationNumber}}</b>
-      </div>
-      <div>
-        <i>Status</i>
-        {{vehicleData.vehicleStatus}}
-      </div>
-      <div>
-        <i>Location</i>
-        {{vehicleData.location}}
-      </div>
-      <div>
-        {{sAgo(vehicleData.created)}}
-      </div>
-    </div>
-  </v-tooltip>
+  </VehicleTooltip>
 </template>
 
 <style lang="scss" scoped>
@@ -58,10 +43,12 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import VehicleTooltip from '@/components/common/VehicleTooltip.vue'
 import {JobTrip, imputedEndTime} from '@/lib/types.ts';
 import singaporeColors from '@/lib/singaporeColors';
 import store from '@/store';
 import sAgo from 's-ago';
+import { vehicleStatusIsStale } from '@/store/vehicles';
 
 export default Vue.extend({
   inject: {
@@ -81,6 +68,10 @@ export default Vue.extend({
       type: Number,
       required: true,
     }
+  },
+
+  components: {
+    VehicleTooltip,
   },
 
   computed: {
@@ -106,7 +97,7 @@ export default Vue.extend({
 
     isStale () {
       if (!this.vehicleData) return
-      return (Date.now() - this.vehicleData.created) > 15 * 60e3
+      return vehicleStatusIsStale(this.vehicleData)
     },
 
     leftPosition (): string {
