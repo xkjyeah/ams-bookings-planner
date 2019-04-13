@@ -76,6 +76,7 @@
 }
 </style>
 <script lang="ts">
+import _ from 'lodash'
 import Vue from 'vue'
 import store from '@/store'
 import {Team, KeyableTrip} from '@/lib/types'

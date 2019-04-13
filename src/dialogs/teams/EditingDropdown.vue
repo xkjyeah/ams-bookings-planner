@@ -54,25 +54,30 @@ import _ from 'lodash'
 
 export default Vue.extend({
   props: {
-    items: {
-      type: Array,
-      required: true,
-    },
-    value: {
-      validator: (prop: any) => typeof prop === 'string' || prop === null,
-      required: true,
-    }
+    items: {},
+    value: {},
+    // Somehow required for typechecking to succeed
+    // value: {type: String},
+    // items: {
+    //   type: Array,
+    //   required: true,
+    // },
+    // value: {
+    //   // validator: (prop: any): boolean => typeof prop === 'string' || prop === null,
+    //   required: true,
+    // }
   },
 
   computed: {
     listItems (): {text: string, value: string}[] {
-      const search = (this.searchInput || '').toLowerCase()
+      const searchInput = this.searchInput as string
+      const searchLowerCase = (searchInput || '').toLowerCase()
       const entries = (this.lowerCaseItems as string[])
       .map((s: string, index: number): [string, number] => [s, index])
       .filter((si: [string, number]): boolean => {
         const [s, i] = si
-        if (!search) return true
-        return s.indexOf(search) !== -1
+        if (!searchLowerCase) return true
+        return s.indexOf(searchLowerCase) !== -1
       })
       .map((si: [string, number]) => {
         const [s, index] = si
@@ -82,11 +87,11 @@ export default Vue.extend({
         }
       })
 
-      if (!(search in this.itemsByValue)) {
+      if (!(searchLowerCase in this.itemsByValue)) {
         return entries
           .concat([{
-            text: this.searchInput || '',
-            value: this.searchInput || '',
+            text: searchInput || '',
+            value: searchInput || '',
           }])
       } else {
         return entries
@@ -111,23 +116,23 @@ export default Vue.extend({
   },
 
   mounted (): void {
-    this.$watch('value', (v) => {
-      this.searchInput = this.value;
+    this.$watch('value', (v: any) => {
+      this.searchInput = this.value as string;
     }, {immediate: true})
 
-    this.$watch('listItems', (v) => {
+    this.$watch('listItems', (v: any) => {
       this.selection = -1
     })
 
-    this.$watch('selection', (v) => {
+    this.$watch('selection', (v: any) => {
       // This is super hacky, but it's because
       // Vue doesn't honour the v-for order
       // when creating an array-based ref
-      const r = this.$refs.selectionItems.$el.children[v]
+      const r = (this.$refs.selectionItems as Vue).$el.children[v]
       if (r) {
-        r.parentElement.scrollTo(
+        r.parentElement!.scrollTo(
           0,
-          r.offsetTop
+          (r as HTMLElement).offsetTop
         )
       }
     })
@@ -139,7 +144,7 @@ export default Vue.extend({
       this.showMenu = false
       this.searchInput = item.text
       this.selection = -1
-      this.$refs.myinput.focus()
+      ; (this.$refs.myinput as HTMLInputElement).focus()
     },
 
     handleBlur(e: FocusEvent): void {

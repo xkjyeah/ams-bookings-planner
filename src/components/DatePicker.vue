@@ -27,7 +27,7 @@ export default {
   computed: {
     timestampText () {
       console.log(new Date(store.state.trips.timestamp))
-      return dateformat(store.state.trips.timestamp, 'dd mmm yyyy')
+      return dateformat(store.state.trips.timestamp, 'ddd, dd mmm yyyy')
     },
     timestampISO () {
       return dateformat(store.state.trips.timestamp, 'yyyy-mm-dd')

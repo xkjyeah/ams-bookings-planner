@@ -136,7 +136,7 @@ export default Vue.extend({
     onDrop (e: DragEvent, index: number) {
       e.preventDefault()
 
-      if (!e.dataTransfer.types.includes('text/team-reorder-drag')) {
+      if (!e.dataTransfer!.types.includes('text/team-reorder-drag')) {
         return true
       }
 

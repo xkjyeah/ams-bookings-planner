@@ -106,7 +106,7 @@ export default Vue.extend({
         currentTimeOffset + 3600e3,
         Math.max(
           currentTimeOffset - 3600e3,
-          this.timeSinceMidnight
+          this.timeSinceMidnight || 0
         )
       )
       const centreX = (boundedTime / 3600e3 * this.xScale()) + 'px'

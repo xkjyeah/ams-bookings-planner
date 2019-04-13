@@ -47,7 +47,7 @@ export default Vue.extend({
         if (!focusable) return
 
         if (v) {
-          setTimeout(() => focusable.select(), 1)
+          setTimeout(() => (focusable as HTMLInputElement).select(), 1)
         }
       })
     }

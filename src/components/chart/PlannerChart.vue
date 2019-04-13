@@ -138,16 +138,16 @@ export default Vue.extend({
     },
 
     onDragOver(event: DragEvent) {
-      if (!event.dataTransfer.getData('text/trip-reassign')) {
+      if (!event.dataTransfer!.getData('text/trip-reassign')) {
         return
       }
       event.preventDefault()
-      event.dataTransfer.dropEffect = 'move'
+      event.dataTransfer!.dropEffect = 'move'
 
-      const data = JSON.parse(event.dataTransfer.getData('text/trip-reassign'))
+      const data = JSON.parse(event.dataTransfer!.getData('text/trip-reassign'))
       const {start, end} = data
 
-      const y = computeRelativeYPosition(event, this.$refs.scrollRef)
+      const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
       // Show preview of destination
       // Compute row, width
@@ -157,12 +157,12 @@ export default Vue.extend({
     },
 
     onDrop(event: DragEvent) {
-      if (!event.dataTransfer.getData('text/trip-reassign')) {
+      if (!event.dataTransfer!.getData('text/trip-reassign')) {
         return
       }
-      const y = computeRelativeYPosition(event, this.$refs.scrollRef)
+      const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
-      const data = JSON.parse(event.dataTransfer.getData('text/trip-reassign'))
+      const data = JSON.parse(event.dataTransfer!.getData('text/trip-reassign'))
       const {key, tripIndex} = data
 
       const row = Math.floor(y / this.yAxisScale)

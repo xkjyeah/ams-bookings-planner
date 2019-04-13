@@ -82,7 +82,7 @@
         /> -->
 
       <v-layout>
-        <div>
+        <div style="width: 80%">
           <TimeEditor
             label="Start Time"
             :value="tripBeingEdited.startTime"
@@ -116,7 +116,8 @@
         </div>
       </v-layout>
       <PostcodePicker />
-      <div style="text-align: right">
+      <v-layout>
+        <v-spacer />
         <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
           <template v-slot:activator="{on}">
             <v-btn v-on="on">
@@ -152,7 +153,7 @@
           >
           {{tripBeingEdited.cancelled ? 'Restore the trip' : 'Cancel the trip'}}
         </v-btn>
-      </div>
+      </v-layout>
     </v-card-text>
   </div>
 </template>
@@ -207,7 +208,7 @@ export default Vue.extend({
     },
 
     reassignTripToTeam (key: string) {
-      const team = this.$store.state.trips.teams.find(t =>
+      const team = this.$store.state.trips.teams.find((t: Team) =>
         tripKey(t) === key)
 
       this.$store.commit('trips/reassignJob', {

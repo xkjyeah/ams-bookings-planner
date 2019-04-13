@@ -1,4 +1,4 @@
-import {Job, Trip, Team, KeyableTrip, LatLng, imputedEndTime, Trip} from '@/lib/types'
+import {Job, Team, KeyableTrip, LatLng, imputedEndTime, Trip} from '@/lib/types'
 import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
@@ -378,16 +378,6 @@ export default {
       context.commit('_disableSaves', promise)
     }
   }
-
-  // actions: {
-  //   updateTripWithSync (context: any, options: any) {
-  //     context.commit('updateTrip', options)
-  //     syncTrip(trip)
-  //   },
-  //   reorderTeamWithSync (context: any, options: any) {
-  //     context.commit('reorderTrip', options)
-  //   },
-  // }
 }
 
 function formatDate(date: Date) {

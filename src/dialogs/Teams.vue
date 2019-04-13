@@ -133,7 +133,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import store from '@/store'
-import {TripsState, ScheduleByTeam, KeyableTrip, tripKey} from '@/store/trips'
+import {KeyableTrip} from '@/lib/types'
+import {TripsState, ScheduleByTeam, tripKey} from '@/store/trips'
 import { VehiclesState } from '@/store/vehicles';
 import EditingCell from '@/dialogs/teams/EditingCell.vue';
 import PersonView from '@/dialogs/teams/PersonView.vue';
@@ -176,7 +177,7 @@ export default Vue.extend({
       return (store.state as any).dialogs.activeDialog == 'teams'
     },
     vehicles () {
-      return (store.state.vehicles as VehiclesState).vehicles
+      return ((store.state as any).vehicles as VehiclesState).vehicles
     },
     teams () {
       return (store.state.trips as TripsState).teams || []
@@ -214,11 +215,6 @@ export default Vue.extend({
       event.dataTransfer.dropEffect = "move"
       // Firefox insists on this to activate the drag
       event.dataTransfer.setData('text/vehicle-drag', vehicle)
-    },
-
-    handleDialogDraggedOver(event: DragEvent) {
-      event.preventDefault()
-      event.dataTransfer.dropEffect = 'cancel'
     },
 
     createNewTeam(value: string, known: 'driver' | 'medic' | 'vehicle') {
