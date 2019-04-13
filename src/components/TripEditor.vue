@@ -1,9 +1,31 @@
 <template>
   <div v-if="tripBeingEdited" :key="tripBeingEdited.id" class="trip-editor">
+    <v-card-actions>
+      <v-layout align-content-end>
+        <v-spacer />
+        <v-btn
+          color="neutral"
+          icon
+          @click="$store.commit('tripEditing/editTrip', null)"
+          >
+          <v-icon>close</v-icon>
+        </v-btn>
+      </v-layout>
+    </v-card-actions>
     <v-card-text>
       <h2>
         {{tripBeingEdited.description}}
       </h2>
+
+      <v-select
+        label="Assigned to"
+        :items="$store.state.trips.teams"
+        :item-text="t => `${t.driver}, ${t.medic}`"
+        :item-value="tripKey"
+        :value="tripKey(tripBeingEdited)"
+        @input="reassignTripToTeam($event)"
+        >
+      </v-select>
 
       <v-textarea
         label="Description"
@@ -91,13 +113,6 @@
         </v-btn>
       </div>
     </v-card-text>
-    <v-card-actions align="right">
-      <v-btn
-        color="neutral"
-        @click="$store.commit('tripEditing/editTrip', null)"
-        >Close
-      </v-btn>
-    </v-card-actions>
   </div>
 </template>
 <style scoped lang="scss">
@@ -120,6 +135,7 @@ import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
+import {tripKey, TripsState} from '@/store/trips'
 
 export default Vue.extend({
   components: {
@@ -133,6 +149,8 @@ export default Vue.extend({
       return this.$store.getters['tripEditing/tripBeingEdited'] as Trip
     },
 
+    tripKey: () => tripKey,
+
     singaporeColors: () => singaporeColors,
 
     deleteAllowed (): Boolean {
@@ -144,6 +162,24 @@ export default Vue.extend({
   methods: {
     updateTrip (field: string, value: any) {
       this.$store.dispatch('tripEditing/updateTripBeingEdited', {[field]: value})
+    },
+
+    reassignTripToTeam (key: string) {
+      const team = this.$store.state.trips.teams.find(t =>
+        tripKey(t) === key)
+
+      this.$store.commit('trips/reassignJob', {
+        trip: this.tripBeingEdited,
+        team
+      })
+      this.$store.commit('tripEditing/editTrip', {
+        team,
+        index: (this.$store.state.trips as TripsState)
+          .scheduleByTeam[tripKey(team)]
+          .trips.length - 1
+      })
+
+      // TODO: scroll to the trip
     },
 
     combineDateTimeOffset(...args: any[]) {

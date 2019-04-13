@@ -192,8 +192,10 @@ export default Vue.extend({
       const alignedStartTime = Math.floor(
         event.offsetX / this.xAxisScale / 0.25
       ) * .25 * 3600e3
-      this.$store.dispatch('tripEditing/createNewTripAtTime', {
-        time: alignedStartTime
+      const rowNumber = Math.floor(event.offsetY / this.yAxisScale)
+      this.$store.dispatch('tripEditing/createAndEditNewTripAtTime', {
+        time: alignedStartTime,
+        ...(this.$store.getters['trips/teamForRow'](rowNumber)),
       })
     },
   }

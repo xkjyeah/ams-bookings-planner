@@ -34,6 +34,7 @@
 
 <style lang="scss" scoped>
 .trip-box {
+  user-select: none;
   position: absolute;
   overflow: hidden;
   font-family: Arial, sans-serif;
@@ -42,6 +43,10 @@
   border: solid 1px #404;
   color: #FFF;
   box-sizing: content-box;
+
+  &:hover:not(.is-selected) {
+    box-shadow: 0px 0px 4px rgba(0, 0, 153, 0.5);
+  }
 }
 .is-selected {
   box-shadow: 0px 0px 4px #009;

@@ -167,10 +167,20 @@ export default Vue.extend({
 
       const row = Math.floor(y / this.yAxisScale)
 
+      const tripToMove = this.$store.state.trips.scheduleByTeam[key].trips[tripIndex]
+      const destinationTeam = this.$store.getters['trips/teamForRow'](row)
+      const wantToEdit = this.$store.getters['tripEditing/tripBeingEdited'] === tripToMove
+
       this.$store.commit('trips/reassignJob', {
-        trip: this.$store.state.trips.scheduleByTeam[key].trips[tripIndex],
-        team: this.$store.getters['trips/teamForRow'](row),
+        trip: tripToMove,
+        team: destinationTeam,
       })
+
+      if (wantToEdit) {
+        this.$store.dispatch('tripEditing/editLatestTripOfTeam', {
+          team: destinationTeam
+        })
+      }
 
       this.drag.row = -1 // Disable the placeholder now
 

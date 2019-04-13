@@ -78,6 +78,18 @@ export default {
       )
     },
 
+    editLatestTripOfTeam (
+      context: any,
+      options: {team: KeyableTrip}
+    ) {
+      context.commit('tripEditing/editTrip', {
+        team: options.team,
+        index: (context.rootState.trips as TripsState)
+          .scheduleByTeam[tripKey(options.team)]
+          .trips.length - 1
+      }, {root: true})
+    },
+
     deleteTrip(context: Vuex.ActionContext<TripEditingState, {}>) {
       context.commit('trips/deleteTrip', {
         team: context.state.teamBeingEdited,
@@ -86,14 +98,14 @@ export default {
       context.commit('tripEditing/editTrip', null, {root: true})
     },
 
-    createNewTripAtTime(
+    createAndEditNewTripAtTime(
       context: Vuex.ActionContext<TripEditingState, {}>,
-      options: {time: number},
+      options: {time: number, driver?: string | null, medic?: string | null},
     ) {
       const trip: Trip = {
         id: uniqueId(),
-        driver: null,
-        medic: null,
+        driver: options.driver || null,
+        medic: options.medic || null,
         startTime: options.time,
         endTime: null,
         startPostcode: null,
@@ -109,7 +121,7 @@ export default {
 
       context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})
       context.commit('tripEditing/editTrip', {
-        team: {driver: null, medic: null},
+        team: {driver: trip.driver, medic: trip.medic},
         index: context.rootState.trips.scheduleByTeam[
           tripKey(trip)
         ].trips.length - 1

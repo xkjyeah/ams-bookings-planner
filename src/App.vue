@@ -199,7 +199,7 @@ export default Vue.extend({
       midnight.setHours(0, 0, 0, 0)
       const delayedTime = (Date.now() - midnight.getTime()) + 10 * 60e3
       const alignedTime = Math.ceil(delayedTime / 5 / 60e3) * 5 * 60e3
-      store.dispatch('tripEditing/createNewTripAtTime', {
+      store.dispatch('tripEditing/createAndEditNewTripAtTime', {
         time: alignedTime,
       })
       this.scrollToCurrentTime()
