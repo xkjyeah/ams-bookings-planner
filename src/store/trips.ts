@@ -235,6 +235,17 @@ export default {
       // FIXME: add checks to ensure teams don't disappear
       // and are not duplicated
       state.teams = teams
+      state.scheduleByTeam = teams.reduce(
+        (acc, v) => {
+          const key = tripKey(v)
+          acc[key] = state.scheduleByTeam[key] || {
+            trips: [],
+            rows: [[]],
+          }
+          return acc
+        },
+        {} as ScheduleByTeam
+      )
       if (!state.savesDisabled) {
         syncTeams(new Date(state.timestamp), state.teams)
       }
@@ -391,7 +402,7 @@ function serializeArray<T>(o: T[]): {[key: string]: T} {
   )
 }
 
-function deserializeArray(o: {[key: string]: any}): any[] {
+export function deserializeArray(o: {[key: string]: any}): any[] {
   const keys = _.sortBy(
     Object.keys(o)
     .map((k: string): [string, number] => [k, parseInt(k)])
@@ -408,7 +419,7 @@ function deserializeArray(o: {[key: string]: any}): any[] {
   return keys.map(s => o[s[0]])
 }
 
-function readTeams(date: Date): Promise<Team[]> {
+export function readTeams(date: Date): Promise<Team[]> {
   return db.ref(`/teams/${formatDate(date)}`)
   .once('value')
   .then((values: Firebase.database.DataSnapshot) => {

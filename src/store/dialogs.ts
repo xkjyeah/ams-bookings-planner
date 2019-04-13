@@ -8,7 +8,7 @@ export default {
 
   state (): DialogsState {
     return {
-      activeDialog: 'persons',
+      activeDialog: 'importTeams',
     }
   },
 

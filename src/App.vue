@@ -33,6 +33,9 @@
           <v-list-tile @click="showPersonsDialog">
             Manage people
           </v-list-tile>
+          <v-list-tile @click="showImportTeamsDialog">
+            Import teams
+          </v-list-tile>
         </v-list>
       </v-menu>
     </v-layout>
@@ -57,6 +60,7 @@
     <VehiclesSync />
     <TeamsDialog />
     <PersonsDialog />
+    <ImportTeamsDialog />
   </v-app>
 </template>
 
@@ -111,6 +115,7 @@ import TripEditor from '@/components/TripEditor.vue';
 import DatePicker from '@/components/DatePicker.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
+import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
 import store from '@/store';
 import defaultData from '@/assets/default-data';
@@ -145,6 +150,7 @@ export default Vue.extend({
   components: {
     ChartArea,
     DatePicker,
+    ImportTeamsDialog,
     PersonsDialog,
     TimeUpdater,
     TeamList,
@@ -192,6 +198,9 @@ export default Vue.extend({
     },
     showPersonsDialog () {
       store.commit('dialogs/showDialog', 'persons')
+    },
+    showImportTeamsDialog () {
+      store.commit('dialogs/showDialog', 'importTeams')
     },
 
     showNewTripDialog () {
