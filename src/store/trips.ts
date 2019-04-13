@@ -55,8 +55,15 @@ export interface TripsState {
   scheduleByTeam: ScheduleByTeam,
   teams: Team[],
   savesDisabled: Boolean,
-  timestamp: number,
   inFlightPromise: Promise<any> | null,
+
+  mode: {
+    type: 'date',
+    timestamp: number,
+  } | {
+    type: 'template',
+    template: string,
+  }
 }
 
 export default {
@@ -67,7 +74,10 @@ export default {
       scheduleByTeam: {},
       teams: [],
       savesDisabled: false,
-      timestamp: Date.now(),
+      mode: {
+        type: 'date',
+        timestamp: Date.now(),
+      },
       inFlightPromise: null,
     }
   },
@@ -172,7 +182,7 @@ export default {
         const spliced = state.teams.splice(options.oldIndex, 1)
         state.teams.splice(options.newIndex, 0, ...spliced)
       }
-      syncTeams(new Date(state.timestamp), state.teams)
+      syncTeams(state, state.teams)
     },
 
     assignNewlyCreatedJob (state: TripsState, options: {trip: Trip}) {
@@ -198,7 +208,7 @@ export default {
         })
       }
 
-      syncTrip(new Date(state.timestamp), trip)
+      syncTrip(state, trip)
     },
 
     reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip | null}) {
@@ -228,7 +238,7 @@ export default {
       toSchedule.trips.push(trip)
       toSchedule.rows = packTrips(toSchedule.trips)
 
-      syncTrip(new Date(state.timestamp), trip)
+      syncTrip(state, trip)
     },
 
     updateTeams (state: TripsState, teams: Team[]) {
@@ -247,7 +257,7 @@ export default {
         {} as ScheduleByTeam
       )
       if (!state.savesDisabled) {
-        syncTeams(new Date(state.timestamp), state.teams)
+        syncTeams(state, state.teams)
       }
     },
 
@@ -288,12 +298,11 @@ export default {
           ]
         })
       )
-      const date = new Date(state.timestamp)
       // syncSchedules(date, state.scheduleByTeam)
-      syncTeams(date, state.teams)
+      syncTeams(state, state.teams)
       _.values(tripsByKey).forEach((trips: Trip[]) => {
         trips.forEach(trip => {
-          syncTrip(date, trip)
+          syncTrip(state, trip)
         })
       })
     },
@@ -321,7 +330,7 @@ export default {
       if (!state.savesDisabled) {
         // FIXME: This is bad form! -- async actions
         // on global state inside a synchronous fn
-        syncTrip(new Date(state.timestamp), trip)
+        syncTrip(state, trip)
       }
     },
 
@@ -330,11 +339,14 @@ export default {
       const trip = schedule.trips[options.tripIndex]
       schedule.trips.splice(options.tripIndex, 1)
       schedule.rows = packTrips(schedule.trips)
-      syncDeleteTrip(new Date(state.timestamp), trip)
+      syncDeleteTrip(state, trip)
     },
 
     _setTimestamp(state: TripsState, timestamp: number) {
-      state.timestamp = timestamp
+      state.mode = {
+        type: 'date',
+        timestamp
+      }
     },
 
     _disableSaves (state: TripsState, data: any) {
@@ -380,12 +392,20 @@ export default {
   }
 }
 
+function getRelPath(state: TripsState): string {
+  if (state.mode.type === 'date') {
+    return formatDate(new Date(state.mode.timestamp))
+  } else {
+    return state.mode.template
+  }
+}
+
 function formatDate(date: Date) {
   return dateformat(date, 'yyyy-mm-dd')
 }
 
-function syncTeams(date: Date, teams: KeyableTrip[]) {
-  db.ref(`/teams/${formatDate(date)}`)
+function syncTeams(state: TripsState, teams: KeyableTrip[]) {
+  db.ref(`/teams/${getRelPath(state)}`)
     .set(serializeArray(teams))
 }
 
@@ -516,13 +536,13 @@ function packTrips(trips: Trip[]): number[][] {
 }
 
 // TODO: We may want to partition by trips by date, and fetch them all
-function syncTrip(date: Date, trip: Trip) {
+function syncTrip(state: TripsState, trip: Trip) {
   trip.id = trip.id || uniqueId()
-  db.ref(`/trips/${formatDate(date)}/${trip.id}`).set(trip)
+  db.ref(`/trips/${getRelPath(state)}/${trip.id}`).set(trip)
 }
-function syncDeleteTrip(date: Date, trip: Trip) {
+function syncDeleteTrip(state: TripsState, trip: Trip) {
   assert(trip.id, 'Wanted to delete a trip without an ID')
-  db.ref(`/trips/${formatDate(date)}/${trip.id}`).set(null)
+  db.ref(`/trips/${getRelPath(state)}/${trip.id}`).set(null)
 }
 
 function parseLatLng(o: any): LatLng | null {
