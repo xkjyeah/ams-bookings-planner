@@ -27,6 +27,7 @@ export default Vue.extend({
 
   methods: {
     handleDragOver (event: DragEvent) {
+      if (!event.dataTransfer) return
       if (event.dataTransfer.getData(this.expectType)) {
         event.preventDefault()
         event.dataTransfer.dropEffect = 'move'

@@ -20,6 +20,9 @@
           :value="400"
           />
       </v-radio-group>
+      <v-btn @click="showDialog('manifest')">
+        Show Manifest
+      </v-btn>
       <v-menu offset-y>
         <template v-slot:activator="{on}">
           <v-btn v-on="on">
@@ -27,13 +30,13 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-tile @click="showTeamsDialog">
+          <v-list-tile @click="showDialog('teams')">
             Manage teams
           </v-list-tile>
-          <v-list-tile @click="showPersonsDialog">
+          <v-list-tile @click="showDialog('persons')">
             Manage people
           </v-list-tile>
-          <v-list-tile @click="showImportTeamsDialog">
+          <v-list-tile @click="showDialog('importTeams')">
             Import teams
           </v-list-tile>
         </v-list>
@@ -60,6 +63,7 @@
     <VehiclesSync />
     <TeamsDialog />
     <PersonsDialog />
+    <ManifestDialog />
     <ImportTeamsDialog />
   </v-app>
 </template>
@@ -115,6 +119,7 @@ import TripEditor from '@/components/TripEditor.vue';
 import DatePicker from '@/components/DatePicker.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
+import ManifestDialog from '@/dialogs/Manifest.vue';
 import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
 import store from '@/store';
@@ -151,6 +156,7 @@ export default Vue.extend({
     ChartArea,
     DatePicker,
     ImportTeamsDialog,
+    ManifestDialog,
     PersonsDialog,
     TimeUpdater,
     TeamList,
@@ -193,14 +199,8 @@ export default Vue.extend({
     scrollToCurrentTime () {
       (this.$refs['chart-area'] as any).scrollToCurrentTime()
     },
-    showTeamsDialog () {
-      store.commit('dialogs/showDialog', 'teams')
-    },
-    showPersonsDialog () {
-      store.commit('dialogs/showDialog', 'persons')
-    },
-    showImportTeamsDialog () {
-      store.commit('dialogs/showDialog', 'importTeams')
+    showDialog (dialogName: string) {
+      store.commit('dialogs/showDialog', dialogName)
     },
 
     showNewTripDialog () {

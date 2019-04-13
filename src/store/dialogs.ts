@@ -8,7 +8,7 @@ export default {
 
   state (): DialogsState {
     return {
-      activeDialog: 'importTeams',
+      activeDialog: 'manifest',
     }
   },
 

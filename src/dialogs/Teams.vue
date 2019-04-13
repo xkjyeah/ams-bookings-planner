@@ -1,122 +1,114 @@
 <template>
-  <v-dialog
-    :value="dialogShown"
-    @input="handleDialogInput"
-    @dragover="handleDialogDraggedOver"
-    scrollable
+  <StandardDialog
+    title="Manage teams"
+    name="teams"
+    height="80vh"
+  >
+    <!-- fixme: choose a better key -->
+    <div v-for="(team, i) in teams"
+      :key="`${team.driver},${team.medic}`"
+      :data-key="`${team.driver},${team.medic}`"
+      ref="teamsGrid">
+
+      <div class="teams-grid">
+        <div class="action">
+          <span @click="dropTeam(i)" v-if="!teamHasTrips(team)">
+            <v-icon>delete</v-icon>
+          </span>
+        </div>
+
+        <EditingCell class="cell" :disabled="teamHasTrips(team)">
+          <PersonView :value="team.driver" placeholder="(Driver)" />
+          <template v-slot:editor="editor">
+            <EditingDropdown
+              :items="defaultList"
+              :value="team.driver"
+              @blur="editor.blur()"
+              @input="updateTeam(i, $event, 'driver')"
+            />
+          </template>
+        </EditingCell>
+        <EditingCell class="cell" :disabled="teamHasTrips(team)">
+          {{team.medic}}
+          <template v-slot:editor="editor">
+            <EditingDropdown
+              :items="defaultList"
+              :value="team.medic"
+              @blur="editor.blur()"
+              @input="updateTeam(i, $event, 'medic')"
+            />
+          </template>
+        </EditingCell>
+        <EditingCell class="cell">
+          <VehicleView :value="team.vehicle" placeholder="(No vehicle)" />
+          <template v-slot:editor="editor">
+            <EditingDropdown
+              :items="$store.state.vehicles.vehicles.map(r => r.registrationNumber)"
+              :value="team.vehicle"
+              @blur="editor.blur()"
+              @input="updateTeam(i, $event, 'vehicle')"
+              />
+          </template>
+        </EditingCell>
+      </div>
+      <v-alert
+        v-if="errors[i]"
+        :value="true"
+        type="error"
+      >
+        {{errors[i]}}
+      </v-alert>
+    </div>
+    <div class="teams-grid">
+
+      <div class="action">
+        (New)
+      </div>
+
+      <EditingCell class="cell">
+        <template v-if="newTeam.driver">
+          {{newTeam.driver}}
+        </template>
+        <span v-else class="placeholder">(Driver)</span>
+        <template v-slot:editor="editor">
+          <EditingDropdown
+            :items="defaultList"
+            :value="newTeam.driver"
+            @input="newTeam.driver = $event"
+            @blur="editor.blur()"
+          />
+        </template>
+      </EditingCell>
+      <EditingCell class="cell">
+        <template v-if="newTeam.medic">
+          {{newTeam.medic}}
+        </template>
+        <span v-else class="placeholder">(Medic)</span>
+        <template v-slot:editor="editor">
+          <EditingDropdown
+            :items="defaultList"
+            :value="newTeam.medic"
+            @input="newTeam.medic = $event"
+            @blur="editor.blur()"
+          />
+        </template>
+      </EditingCell>
+      <EditingCell class="cell"
+          @focus.native="maybeCreateTeam"
+          :disabled="true">
+        <span class="placeholder">(Vehicle)</span>
+        <template v-slot:editor="editor">
+        </template>
+      </EditingCell>
+    </div>
+    <v-alert
+      v-if="errors['new']"
+      :value="true"
+      type="error"
     >
-    <v-card>
-      <v-card-title>Manage teams</v-card-title>
-      <v-card-text style="height: 80vh">
-        <h1>Teams</h1>
-
-        <!-- fixme: choose a better key -->
-        <div v-for="(team, i) in teams"
-          :key="`${team.driver},${team.medic}`"
-          :data-key="`${team.driver},${team.medic}`"
-          ref="teamsGrid">
-
-          <div class="teams-grid">
-            <div class="action">
-              <span @click="dropTeam(i)" v-if="!teamHasTrips(team)">
-                <v-icon>delete</v-icon>
-              </span>
-            </div>
-
-            <EditingCell class="cell" :disabled="teamHasTrips(team)">
-              <PersonView :value="team.driver" placeholder="(Driver)" />
-              <template v-slot:editor="editor">
-                <EditingDropdown
-                  :items="defaultList"
-                  :value="team.driver"
-                  @blur="editor.blur()"
-                  @input="updateTeam(i, $event, 'driver')"
-                />
-              </template>
-            </EditingCell>
-            <EditingCell class="cell" :disabled="teamHasTrips(team)">
-              {{team.medic}}
-              <template v-slot:editor="editor">
-                <EditingDropdown
-                  :items="defaultList"
-                  :value="team.medic"
-                  @blur="editor.blur()"
-                  @input="updateTeam(i, $event, 'medic')"
-                />
-              </template>
-            </EditingCell>
-            <EditingCell class="cell">
-              <VehicleView :value="team.vehicle" placeholder="(No vehicle)" />
-              <template v-slot:editor="editor">
-                <EditingDropdown
-                  :items="$store.state.vehicles.vehicles.map(r => r.registrationNumber)"
-                  :value="team.vehicle"
-                  @blur="editor.blur()"
-                  @input="updateTeam(i, $event, 'vehicle')"
-                  />
-              </template>
-            </EditingCell>
-          </div>
-          <v-alert
-            v-if="errors[i]"
-            :value="true"
-            type="error"
-          >
-            {{errors[i]}}
-          </v-alert>
-        </div>
-        <div class="teams-grid">
-
-          <div class="action">
-            (New)
-          </div>
-
-          <EditingCell class="cell">
-            <template v-if="newTeam.driver">
-              {{newTeam.driver}}
-            </template>
-            <span v-else class="placeholder">(Driver)</span>
-            <template v-slot:editor="editor">
-              <EditingDropdown
-                :items="defaultList"
-                :value="newTeam.driver"
-                @input="newTeam.driver = $event"
-                @blur="editor.blur()"
-              />
-            </template>
-          </EditingCell>
-          <EditingCell class="cell">
-            <template v-if="newTeam.medic">
-              {{newTeam.medic}}
-            </template>
-            <span v-else class="placeholder">(Medic)</span>
-            <template v-slot:editor="editor">
-              <EditingDropdown
-                :items="defaultList"
-                :value="newTeam.medic"
-                @input="newTeam.medic = $event"
-                @blur="editor.blur()"
-              />
-            </template>
-          </EditingCell>
-          <EditingCell class="cell"
-              @focus.native="maybeCreateTeam"
-              :disabled="true">
-            <span class="placeholder">(Vehicle)</span>
-            <template v-slot:editor="editor">
-            </template>
-          </EditingCell>
-        </div>
-        <v-alert
-          v-if="errors['new']"
-          :value="true"
-          type="error"
-        >
-          {{errors['new']}}
-        </v-alert>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+      {{errors['new']}}
+    </v-alert>
+  </StandardDialog>
 </template>
 <style scoped lang="scss">
 .teams-grid {
@@ -147,6 +139,7 @@ import EditingCell from '@/dialogs/teams/EditingCell.vue';
 import PersonView from '@/dialogs/teams/PersonView.vue';
 import VehicleView from '@/dialogs/teams/VehicleView.vue';
 import EditingDropdown from '@/dialogs/teams/EditingDropdown.vue';
+import StandardDialog from '@/dialogs/StandardDialog.vue';
 import assert from 'assert';
 
 export default Vue.extend({
@@ -174,6 +167,7 @@ export default Vue.extend({
     EditingCell,
     EditingDropdown,
     PersonView,
+    StandardDialog,
     VehicleView,
   },
 

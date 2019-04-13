@@ -99,7 +99,7 @@ export default {
     },
 
     createAndEditNewTripAtTime(
-      context: Vuex.ActionContext<TripEditingState, {}>,
+      context: Vuex.ActionContext<TripEditingState, any>,
       options: {time: number, driver?: string | null, medic?: string | null},
     ) {
       const trip: Trip = {

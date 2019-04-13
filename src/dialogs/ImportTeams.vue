@@ -1,63 +1,49 @@
 <template>
-  <v-dialog
-    :value="dialogShown"
-    @input="handleDialogInput"
-    scrollable
-    >
-    <v-card>
-      <v-card-title>
-        <v-layout>
-          <h2>Import teams from date</h2>
-          <v-spacer />
-          <v-btn small icon @click="handleDialogInput">
-            <v-icon>close</v-icon>
-          </v-btn>
-        </v-layout>
-      </v-card-title>
-      <v-card-text>
-        <v-layout>
-          <v-date-picker v-model="selectedDate" landscape
-            @input="updatePreview"
-          />
-          <div class="preview-pane">
-            <table class="preview-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Driver</th>
-                  <th>Medic</th>
-                  <th>Vehicle</th>
-                </tr>
-              </thead>
-              <tbody v-if="preview">
-                <tr v-for="(team, i) in preview.slice(0, 100)"
-                    :key="i">
-                  <td></td>
-                  <td>
-                    <template v-if="team.driver">{{team.driver}}</template>
-                    <span v-else class="placeholder">(No driver)</span>
-                  </td>
-                  <td>
-                    <template v-if="team.medic">{{team.medic}}</template>
-                    <span v-else class="placeholder">(No medic)</span>
-                  </td>
-                  <td>
-                    <template v-if="team.vehicle">{{team.vehicle}}</template>
-                    <span v-else class="placeholder">(No vehicle)</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </v-layout>
-        <div>
-          <v-btn :disabled="selectedDate === null"
-            color="primary"
-            @click="handleImport">Import</v-btn>
-        </div>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+  <StandardDialog
+    title="Import teams from date"
+    name="importTeams"
+  >
+    <v-layout>
+      <v-date-picker v-model="selectedDate" landscape
+        @input="updatePreview"
+      />
+      <div class="preview-pane">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Driver</th>
+              <th>Medic</th>
+              <th>Vehicle</th>
+            </tr>
+          </thead>
+          <tbody v-if="preview">
+            <tr v-for="(team, i) in preview.slice(0, 100)"
+                :key="i">
+              <td></td>
+              <td>
+                <template v-if="team.driver">{{team.driver}}</template>
+                <span v-else class="placeholder">(No driver)</span>
+              </td>
+              <td>
+                <template v-if="team.medic">{{team.medic}}</template>
+                <span v-else class="placeholder">(No medic)</span>
+              </td>
+              <td>
+                <template v-if="team.vehicle">{{team.vehicle}}</template>
+                <span v-else class="placeholder">(No vehicle)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </v-layout>
+    <div>
+      <v-btn :disabled="selectedDate === null"
+        color="primary"
+        @click="handleImport">Import</v-btn>
+    </div>
+  </StandardDialog>
 </template>
 <style scoped lang="scss">
 .teams-grid {
@@ -98,7 +84,7 @@ import { VehiclesState } from '@/store/vehicles';
 import EditingCell from '@/dialogs/teams/EditingCell.vue';
 import PersonView from '@/dialogs/teams/PersonView.vue';
 import VehicleView from '@/dialogs/teams/VehicleView.vue';
-import EditingDropdown from '@/dialogs/teams/EditingDropdown.vue';
+import StandardDialog from '@/dialogs/StandardDialog.vue';
 import assert from 'assert';
 import { db } from '@/lib/firebase';
 
@@ -111,10 +97,7 @@ export default Vue.extend({
   },
 
   components: {
-    EditingCell,
-    EditingDropdown,
-    PersonView,
-    VehicleView,
+    StandardDialog,
   },
 
   computed: {

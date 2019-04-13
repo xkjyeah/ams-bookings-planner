@@ -1,93 +1,84 @@
 <template>
-  <v-dialog
-    :value="dialogShown"
-    @input="handleDialogInput"
-    scrollable
+  <StandardDialog name="persons"
+    title="Manage people"
     >
-    <v-card>
-      <v-card-title>Manage people</v-card-title>
-      <v-card-text style="height: 80vh">
-        <h1>People</h1>
+    <!-- fixme: choose a better key -->
+    <div v-for="(person, i) in personList"
+      :key="i"
+      :data-key="person.name"
+      ref="personsGrid">
 
-        <!-- fixme: choose a better key -->
-        <div v-for="(person, i) in personList"
-          :key="i"
-          :data-key="person.name"
-          ref="personsGrid">
-
-          <div class="persons-grid">
-            <div class="action">
-              <span @click="dropPerson(person)">
-                <v-icon>delete</v-icon>
-              </span>
-            </div>
-
-            <!-- name cannot be edited here -->
-            <EditingCell class="cell" :disabled="true">
-              {{person.name}}
-            </EditingCell>
-            <!-- telephone may be edited -->
-            <EditingCell class="cell">
-              <template v-if="person.telephone">
-                {{person.telephone}}
-              </template>
-              <span v-else class="placeholder">(No telephone)</span>
-
-              <template v-slot:editor="editor">
-                <EditingTextField
-                  :value="person.telephone"
-                  @change="updatePerson(i, $event, 'telephone')"
-                  @blur="editor.blur()"
-                  />
-              </template>
-            </EditingCell>
-            <EditingCell class="cell" :disabled="true">
-              {{person.created && sAgo(person.created, 'DD MMM YYYY, hh:mm:ss')}}
-              {{person.updated && sAgo(person.updated, 'DD MMM YYYY, hh:mm:ss')}}
-            </EditingCell>
-          </div>
-          <v-alert
-            v-if="errors[i]"
-            :value="true"
-            type="error"
-          >
-            {{errors[i]}}
-          </v-alert>
+      <div class="persons-grid">
+        <div class="action">
+          <span @click="dropPerson(person)">
+            <v-icon>delete</v-icon>
+          </span>
         </div>
-        <div class="persons-grid">
 
-          <div class="action">
-            (New)
-          </div>
+        <!-- name cannot be edited here -->
+        <EditingCell class="cell" :disabled="true">
+          {{person.name}}
+        </EditingCell>
+        <!-- telephone may be edited -->
+        <EditingCell class="cell">
+          <template v-if="person.telephone">
+            {{person.telephone}}
+          </template>
+          <span v-else class="placeholder">(No telephone)</span>
 
-          <EditingCell class="cell">
-            <template v-if="newPerson.name">
-              {{newPerson.name}}
-            </template>
-            <span v-else class="placeholder">(Name)</span>
-            <template v-slot:editor="editor">
-              <EditingTextField
-                v-model="newPerson.name"
-                @change="maybeCreatePerson"
-                @blur="editor.blur()"
+          <template v-slot:editor="editor">
+            <EditingTextField
+              :value="person.telephone"
+              @change="updatePerson(i, $event, 'telephone')"
+              @blur="editor.blur()"
               />
-            </template>
-          </EditingCell>
-          <EditingCell class="cell">
-          </EditingCell>
-          <EditingCell class="cell">
-          </EditingCell>
-        </div>
-        <v-alert
-          v-if="errors['new']"
-          :value="true"
-          type="error"
-        >
-          {{errors['new']}}
-        </v-alert>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+          </template>
+        </EditingCell>
+        <EditingCell class="cell" :disabled="true">
+          {{person.created && sAgo(person.created, 'DD MMM YYYY, hh:mm:ss')}}
+          {{person.updated && sAgo(person.updated, 'DD MMM YYYY, hh:mm:ss')}}
+        </EditingCell>
+      </div>
+      <v-alert
+        v-if="errors[i]"
+        :value="true"
+        type="error"
+      >
+        {{errors[i]}}
+      </v-alert>
+    </div>
+    <div class="persons-grid">
+
+      <div class="action">
+        (New)
+      </div>
+
+      <EditingCell class="cell">
+        <template v-if="newPerson.name">
+          {{newPerson.name}}
+        </template>
+        <span v-else class="placeholder">(Name)</span>
+        <template v-slot:editor="editor">
+          <EditingTextField
+            v-model="newPerson.name"
+            @change="maybeCreatePerson"
+            @blur="editor.blur()"
+          />
+        </template>
+      </EditingCell>
+      <EditingCell class="cell">
+      </EditingCell>
+      <EditingCell class="cell">
+      </EditingCell>
+    </div>
+    <v-alert
+      v-if="errors['new']"
+      :value="true"
+      type="error"
+    >
+      {{errors['new']}}
+    </v-alert>
+  </StandardDialog>
 </template>
 <style scoped lang="scss">
 .persons-grid {
@@ -117,6 +108,7 @@ import { VehiclesState, Person, PersonList } from '@/store/vehicles';
 import EditingCell from '@/dialogs/teams/EditingCell.vue';
 import EditingTextField from '@/dialogs/teams/EditingTextField.vue';
 import PersonView from '@/dialogs/teams/PersonView.vue';
+import StandardDialog from '@/dialogs/StandardDialog.vue';
 import assert from 'assert';
 import sAgo from 's-ago';
 
@@ -138,6 +130,7 @@ export default Vue.extend({
     EditingCell,
     EditingTextField,
     PersonView,
+    StandardDialog
   },
 
   computed: {
