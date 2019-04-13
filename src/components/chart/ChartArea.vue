@@ -77,7 +77,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import Vue from 'vue';
-import {JobTrip, KeyableTrip, Trip, imputedEndTime} from '@/lib/types.ts';
+import {KeyableTrip, Trip, imputedEndTime} from '@/lib/types.ts';
 import {TripsState, tripKey} from '@/store/trips.ts';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
@@ -108,7 +108,7 @@ export default Vue.extend({
       return store.getters['trips/rowCount'] * this.yAxisScale
     },
 
-    trips (): Array<JobTrip> {
+    trips (): Trip[] {
       return store.getters['trips/trips']
     },
 

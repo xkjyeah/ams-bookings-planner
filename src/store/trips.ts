@@ -1,4 +1,4 @@
-import {Job, Trip, Team, KeyableTrip, LatLng, imputedEndTime, JobTrip} from '@/lib/types'
+import {Job, Trip, Team, KeyableTrip, LatLng, imputedEndTime, Trip} from '@/lib/types'
 import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
@@ -140,7 +140,7 @@ export default {
           // FOR DEBUGGING ONLY
           if (process.env.NODE_ENV !== 'production') {
             if (schedule.trips.length !== _.sumBy(schedule.rows, rs => rs.length)) {
-              throw new Error('Trips length != elements in row!')
+              throw new Error('Trips length != elements in row!' + tripKey(team))
             }
           }
 
@@ -257,23 +257,23 @@ export default {
         const firstTrip = job.trip && {id: uniqueId(), ...job, ...job.trip}
         const secondTrip = job.secondTrip && {id: uniqueId(), ...job, ...job.secondTrip}
 
-        if (firstTrip && secondTrip) return [firstTrip, secondTrip] as JobTrip[]
-        else if (firstTrip || secondTrip) return [(firstTrip || secondTrip)] as JobTrip[]
-        else return [] as JobTrip[]
+        if (firstTrip && secondTrip) return [firstTrip, secondTrip] as Trip[]
+        else if (firstTrip || secondTrip) return [(firstTrip || secondTrip)] as Trip[]
+        else return [] as Trip[]
       }))
 
       const teamByKey = _.mapValues(
         _.keyBy(
           trips,
           tripKey
-        ) as {[k: string]: JobTrip},
-        (trip: JobTrip) => ({ driver: trip.driver, medic: trip.medic, vehicle: null })
+        ) as {[k: string]: Trip},
+        (trip: Trip) => ({ driver: trip.driver, medic: trip.medic, vehicle: null })
       )
 
       const tripsByKey = _.groupBy(
         trips,
         tripKey
-      ) as {[k: string]: JobTrip[]}
+      ) as {[k: string]: Trip[]}
 
       state.teams = _.values(teamByKey).map(s => ({...s, vehicle: null}))
       state.scheduleByTeam = _.fromPairs(
@@ -302,13 +302,20 @@ export default {
       state: TripsState,
       options: {team: KeyableTrip, index: number, updates: {[key: string]: any}}
     ) {
+      assert(!('driver' in options.updates))
+      assert(!('medic' in options.updates))
       // FIXME: Type safety?
-      const trip: any = state.scheduleByTeam[tripKey(options.team)].trips[options.index]
+      const schedule = state.scheduleByTeam[tripKey(options.team)]
+      const trip: any = schedule.trips[options.index]
 
       assert(trip)
 
       for (let key of Object.keys(options.updates)) {
         trip[key] = options.updates[key]
+      }
+
+      if ('startTime' in options.updates || 'endTime' in options.updates) {
+        schedule.rows = packTrips(schedule.trips)
       }
 
       if (!state.savesDisabled) {
@@ -568,6 +575,9 @@ function readTrips(date: Date): Promise<Trip[]> {
         endLocation: tripRaw.endLocation || null,
         startLatLng: parseLatLng(tripRaw.startLatLng),
         endLatLng: parseLatLng(tripRaw.endLatLng),
+        isTentative: !!tripRaw.isTentative,
+        relatedTrip: tripRaw.relatedTrip || null,
+        isReturnTrip: !!tripRaw.isReturnTrip,
         type: tripRaw.type || '<No type>',
         price: isFinite(tripRaw.price)
           ? parseInt(tripRaw.price)

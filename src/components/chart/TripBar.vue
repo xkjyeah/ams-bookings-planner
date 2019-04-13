@@ -6,6 +6,7 @@
     class="trip-box"
     :class="{
       'is-selected': isSelected,
+      'is-tentative': trip.isTentative,
       'cancelled': trip.cancelled,
     }"
     :style="{
@@ -38,11 +39,12 @@
   position: absolute;
   overflow: hidden;
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   z-index: 2;
   border: solid 1px #404;
   color: #FFF;
   box-sizing: content-box;
+  white-space: nowrap;
 
   &:hover:not(.is-selected) {
     box-shadow: 0px 0px 4px rgba(0, 0, 153, 0.5);
@@ -51,6 +53,9 @@
 .is-selected {
   box-shadow: 0px 0px 4px #009;
 }
+.trip-box.is-tentative {
+  border: dashed 1px #404;
+}
 .cancelled {
   text-decoration: line-through;
 }
@@ -58,7 +63,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import {JobTrip, imputedEndTime} from '@/lib/types.ts';
+import {Trip, imputedEndTime} from '@/lib/types.ts';
 import UnobstrusiveTooltip from '@/components/common/UnobstrusiveTooltip.vue';
 import singaporeColors from '@/lib/singaporeColors';
 
@@ -112,7 +117,7 @@ export default Vue.extend({
   },
 
   methods: {
-    presumedDuration (trip: JobTrip) {
+    presumedDuration (trip: Trip) {
       return imputedEndTime(trip) - trip.startTime
     }
   }

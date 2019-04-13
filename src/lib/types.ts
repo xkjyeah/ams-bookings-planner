@@ -10,12 +10,21 @@ export type Team = KeyableTrip & {
 
 export interface LatLng {lat: number, lng: number}
 
-export interface Trip {
+export interface JobBase {
+  description: string,
+  cancelled: boolean
+}
+
+export type Trip = JobBase & {
   driver: string | null,
   medic: string | null,
   startTime: number,
   endTime: number | null,
   id: string,
+
+  isTentative: boolean,
+  relatedTrip: string | null,
+  isReturnTrip: boolean,
 
   startPostcode: string | null,
   endPostcode: string | null,
@@ -39,6 +48,3 @@ export interface Job {
 
 export const imputedEndTime = (trip: Trip) =>
   trip.endTime || ((trip.startTime || 0) + 30 * 60e3)
-
-export interface JobTrip extends Trip, Job {
-}

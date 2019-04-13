@@ -44,7 +44,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import VehicleTooltip from '@/components/common/VehicleTooltip.vue'
-import {JobTrip, imputedEndTime} from '@/lib/types.ts';
+import {Trip, imputedEndTime} from '@/lib/types.ts';
 import singaporeColors from '@/lib/singaporeColors';
 import store from '@/store';
 import sAgo from 's-ago';
@@ -127,7 +127,7 @@ export default Vue.extend({
   },
 
   methods: {
-    presumedDuration (trip: JobTrip) {
+    presumedDuration (trip: Trip) {
       return imputedEndTime(trip) - trip.startTime
     }
   }

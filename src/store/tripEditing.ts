@@ -117,6 +117,11 @@ export default {
         startLatLng: null,
         endLatLng: null,
         created: Date.now(),
+        isTentative: false,
+        isReturnTrip: false,
+        relatedTrip: null,
+        description: 'New trip $100',
+        cancelled: false,
       }
 
       context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})

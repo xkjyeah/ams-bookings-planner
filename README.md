@@ -18,7 +18,7 @@ TODO:
 
 12. [X] Add additional information about driver / medic (e.g. phone number)
   - [ ] SMS support
-13. [ ] Allow team pairings to be imported from another day?
+13. [X] Allow team pairings to be imported from another day?
 15. [ ] import trips from a datastore, e.g. dialysis
 
 14. [ ] Allow driver/medics to have starting/ending times/locations?

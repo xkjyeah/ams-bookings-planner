@@ -81,22 +81,63 @@
         :disabled="tripBeingEdited.cancelled"
         /> -->
 
-      <TimeEditor
-        label="Start Time"
-        :value="tripBeingEdited.startTime"
-        @input="updateTrip('startTime', $event)"
-        :disabled="tripBeingEdited.cancelled"
-        />
+      <v-layout>
+        <div>
+          <TimeEditor
+            label="Start Time"
+            :value="tripBeingEdited.startTime"
+            @input="updateTrip('startTime', $event)"
+            :disabled="tripBeingEdited.cancelled"
+            />
 
-      <TimeEditor
-        label="End Time"
-        :value="tripBeingEdited.endTime"
-        @input="updateTrip('endTime', $event < tripBeingEdited.startTime ? $event + 86400e3 : $event)"
-        :disabled="tripBeingEdited.cancelled"
-        />
+          <TimeEditor
+            label="End Time"
+            :value="tripBeingEdited.endTime"
+            @input="updateTrip('endTime',
+              $event === null ? null
+              : $event < tripBeingEdited.startTime ? $event + 86400e3
+              : $event)"
+            :disabled="tripBeingEdited.cancelled"
+            />
+        </div>
+        <div>
+          <v-checkbox
+            :input-value="tripBeingEdited.isTentative"
+            @change="updateTrip('isTentative', $event)"
+            label="Timing is tentative"
+            />
 
+          <a href="#" @click.prevent="visitRelatedTrip"
+              v-if="tripBeingEdited.relatedTrip">
+            {{tripBeingEdited.isReturnTrip
+              ? 'First trip'
+              : 'Return trip'}}
+          </a>
+        </div>
+      </v-layout>
       <PostcodePicker />
       <div style="text-align: right">
+        <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
+          <template v-slot:activator="{on}">
+            <v-btn v-on="on">
+              Return trip
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-tile @click="createReturnTrip(2 * 3600e3)">
+              Return trip in 2hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(3 * 3600e3)">
+              Return trip in 3hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(4 * 3600e3)">
+              Return trip in 4hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(5 * 3600e3)">
+              Return trip in 5hrs
+            </v-list-tile>
+          </v-list>
+        </v-menu>
         <v-btn
           v-if="deleteAllowed"
           color="error"
@@ -128,14 +169,15 @@
 </style>
 <script lang="ts">
 import Vue from 'vue'
-import { Trip } from '@/lib/types';
+import { Trip, Team } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
 import TimeEditor from '@/components/common/TimeEditor.vue'
 import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
-import {tripKey, TripsState} from '@/store/trips'
+import {tripKey, TripsState, ProcessedScheduleData} from '@/store/trips'
+import uniqueId from '@/lib/uniqueId';
 
 export default Vue.extend({
   components: {
@@ -197,6 +239,52 @@ export default Vue.extend({
         date.getDate(),
       )
     },
+
+    createReturnTrip(offset: number) {
+      const relatedTripId = uniqueId()
+      const trip: Trip = {
+        ...this.tripBeingEdited,
+        id: relatedTripId,
+
+        description: '[Ret] ' + (this.tripBeingEdited.description || ''),
+        created: Date.now(),
+        startTime: this.tripBeingEdited.startTime + offset,
+        endTime: this.tripBeingEdited.endTime === null
+          ? null : this.tripBeingEdited.endTime + offset,
+
+        startAddress: this.tripBeingEdited.endAddress,
+        startLocation: this.tripBeingEdited.endLocation,
+        startLatLng: this.tripBeingEdited.endLatLng,
+        startPostcode: this.tripBeingEdited.endPostcode,
+
+        endAddress: this.tripBeingEdited.startAddress,
+        endLocation: this.tripBeingEdited.startLocation,
+        endLatLng: this.tripBeingEdited.startLatLng,
+        endPostcode: this.tripBeingEdited.startPostcode,
+
+        relatedTrip: this.tripBeingEdited.id,
+        isReturnTrip: true,
+        isTentative: true,
+      }
+
+      this.$store.commit('trips/assignNewlyCreatedJob', {trip})
+      this.updateTrip('relatedTrip', relatedTripId)
+    },
+
+    // Searches through all existing trips and find the
+    // one with the same id
+    visitRelatedTrip() {
+      const result = (this.$store.getters['trips/teamSchedules'] as [Team, ProcessedScheduleData][])
+        .map(([team, schedule]): [Team, number] => [team, schedule.trips.findIndex(t => t.id === this.tripBeingEdited.relatedTrip)])
+        .find(([team, index]) => index !== -1)
+
+      if (result) {
+        const [team, index] = result
+        this.$store.commit('tripEditing/editTrip', {team, index})
+      } else {
+        this.updateTrip('relatedTrip', null)
+      }
+    }
   }
 })
 </script>

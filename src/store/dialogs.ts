@@ -8,7 +8,7 @@ export default {
 
   state (): DialogsState {
     return {
-      activeDialog: 'manifest',
+      activeDialog: null,
     }
   },
 

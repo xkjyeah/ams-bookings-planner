@@ -110,7 +110,7 @@
 import _ from 'lodash';
 import querystring from 'querystring';
 import Vue from 'vue';
-import {JobTrip, KeyableTrip} from '@/lib/types.ts';
+import {Trip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState} from '@/store/trips.ts';
 import ChartArea from '@/components/chart/ChartArea.vue';
 import TeamList from '@/components/chart/TeamList.vue';
@@ -144,7 +144,7 @@ export default Vue.extend({
       return store.getters['trips/rowCount'] * this.yAxisScale
     },
 
-    trips (): Array<JobTrip> {
+    trips (): Trip[] {
       return store.getters['trips/trips']
     },
 
