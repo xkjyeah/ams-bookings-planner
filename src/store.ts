@@ -5,6 +5,7 @@ import Trips from '@/store/trips.ts'
 import Vehicles from '@/store/vehicles.ts'
 import Dialogs from '@/store/dialogs.ts'
 import TripEditing from '@/store/tripEditing.ts'
+import Templates from '@/store/templates';
 
 export default new Vuex.Store({
   modules: {
@@ -14,5 +15,6 @@ export default new Vuex.Store({
     dialogs: Dialogs,
     vehicles: Vehicles,
     tripEditing: TripEditing,
+    templates: Templates,
   },
 })

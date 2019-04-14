@@ -1,9 +1,18 @@
 <template>
   <v-app class="app">
     <v-layout class="controls" row
+        :class="{
+          'app-showing-template': $store.state.trips.mode.type === 'template'
+        }"
         align-content-start
     >
-      <DatePicker style="flex: 0 0 100px" />
+      <DatePicker v-if="$store.state.trips.mode.type === 'date'"
+          style="flex: 0 0 100px" />
+      <h2 v-if="$store.state.trips.mode.type === 'template'">
+        <v-icon @click="goBack()">chevron_left</v-icon>
+        {{$store.state.trips.mode.template}}
+      </h2>
+
       <v-radio-group
         row
         v-model="xAxisScale">
@@ -39,6 +48,9 @@
           <v-list-tile @click="showDialog('importTeams')">
             Import teams
           </v-list-tile>
+          <v-list-tile @click="showDialog('templates')">
+            Manage job templates
+          </v-list-tile>
         </v-list>
       </v-menu>
     </v-layout>
@@ -65,6 +77,7 @@
     <PersonsDialog />
     <ManifestDialog />
     <ImportTeamsDialog />
+    <TemplatesDialog />
   </v-app>
 </template>
 
@@ -73,7 +86,7 @@
   position: relative;
 }
 .placeholder {
-  color: #CCC;
+  color: #888;
 }
 </style>
 
@@ -103,6 +116,9 @@
     box-sizing: border-box;
   }
 }
+.app-showing-template {
+  background: #009;
+}
 </style>
 
 
@@ -112,6 +128,7 @@ import querystring from 'querystring';
 import Vue from 'vue';
 import {Trip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState} from '@/store/trips.ts';
+import {initializeHashWatch} from '@/store/modes'
 import ChartArea from '@/components/chart/ChartArea.vue';
 import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
@@ -120,6 +137,7 @@ import DatePicker from '@/components/DatePicker.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
 import ManifestDialog from '@/dialogs/Manifest.vue';
+import TemplatesDialog from '@/dialogs/Templates.vue';
 import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
 import store from '@/store';
@@ -161,36 +179,12 @@ export default Vue.extend({
     TimeUpdater,
     TeamList,
     TeamsDialog,
+    TemplatesDialog,
     TripEditor,
     VehiclesSync,
   },
   created () {
-    try {
-      const dateHash = () => {
-        const hash = querystring.parse(window.location.hash.substring(1))
-        if (hash.date) {
-          const date = new Date(hash.date)
-          return isFinite(date.getTime()) ? date : null
-        }
-      }
-
-      const handleNewDateHash = () => {
-        const d = dateHash()
-
-        if (d) {
-          store.dispatch('trips/setDate', d)
-          return true
-        }
-        return false
-      }
-
-      window.addEventListener('popstate', handleNewDateHash)
-
-      if (handleNewDateHash()) {
-        return
-      }
-    } catch {}
-    store.dispatch('trips/setDate', new Date)
+    initializeHashWatch(this.$store)
   },
   mounted () {
     this.scrollToCurrentTime()
@@ -217,6 +211,10 @@ export default Vue.extend({
     importJobs () {
       // initialize data
       store.commit('trips/importJobs', defaultData())
+    },
+
+    goBack() {
+      window.history.back()
     }
   }
 });

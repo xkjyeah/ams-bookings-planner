@@ -69,10 +69,6 @@
 
 .preview-table  {
   width: 400px;
-
-  .placeholder {
-    color: #888;
-  }
 }
 </style>
 <script lang="ts">
@@ -113,7 +109,10 @@ export default Vue.extend({
     },
     updatePreview () {
       if (this.selectedDate) {
-        readTeams(new Date(this.selectedDate))
+        readTeams({
+          type: 'date',
+          timestamp: new Date(this.selectedDate).getTime()
+        })
         .then((v) => {
           this.preview = v
         })
@@ -124,7 +123,10 @@ export default Vue.extend({
 
     handleImport () {
       if (this.selectedDate) {
-        readTeams(new Date(this.selectedDate))
+        readTeams({
+          type: 'date',
+          timestamp: new Date(this.selectedDate).getTime()
+        })
           .then((teams: Team[]) => {
             const teamsById = _.keyBy(
               this.$store.state.trips.teams,

@@ -15,9 +15,10 @@
       />
   </v-menu>
 </template>
-<script>
+<script lang="ts">
 import dateformat from 'dateformat';
 import store from '@/store';
+import { TripsState } from '@/store/trips';
 export default {
   data () {
     return {
@@ -26,17 +27,25 @@ export default {
   },
   computed: {
     timestampText () {
-      console.log(new Date(store.state.trips.timestamp))
-      return dateformat(store.state.trips.timestamp, 'ddd, dd mmm yyyy')
+      const mode = (store.state.trips as TripsState).mode
+      if (mode.type === 'date') {
+        return dateformat(mode.timestamp, 'ddd, dd mmm yyyy')
+      }
     },
     timestampISO () {
-      return dateformat(store.state.trips.timestamp, 'yyyy-mm-dd')
+      const mode = (store.state.trips as TripsState).mode
+      if (mode.type === 'date') {
+        return dateformat(mode.timestamp, 'yyyy-mm-dd')
+      }
     }
   },
   methods: {
-    handleDateInput (d) {
+    handleDateInput (d: string) {
       // FIXME: handle time zones properly?
-      store.dispatch('trips/setDate', new Date(d + "T00:00:00+0800"))
+      store.dispatch('trips/setMode', {
+        type: 'date',
+        timestamp: new Date(d + "T00:00:00+0800").getTime()
+      })
     }
   }
 }

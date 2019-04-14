@@ -7,6 +7,7 @@ import * as Firebase from 'firebase'
 import dateformat from 'dateformat';
 import querystring from 'querystring';
 import Vue from 'vue';
+import { pushModeToHistory } from '@/store/modes';
 
 function makeTripTeamKey(trip: KeyableTrip) {
   if (!trip) return null
@@ -51,19 +52,21 @@ export type ScheduleByTeam = {
   [key: string]: ScheduleData
 }
 
+export type AppMode = {
+  type: 'date',
+  timestamp: number,
+} | {
+  type: 'template',
+  template: string,
+}
+
 export interface TripsState {
   scheduleByTeam: ScheduleByTeam,
   teams: Team[],
   savesDisabled: Boolean,
   inFlightPromise: Promise<any> | null,
 
-  mode: {
-    type: 'date',
-    timestamp: number,
-  } | {
-    type: 'template',
-    template: string,
-  }
+  mode: AppMode,
 }
 
 export default {
@@ -182,7 +185,7 @@ export default {
         const spliced = state.teams.splice(options.oldIndex, 1)
         state.teams.splice(options.newIndex, 0, ...spliced)
       }
-      syncTeams(state, state.teams)
+      syncTeams(state.mode, state.teams)
     },
 
     assignNewlyCreatedJob (state: TripsState, options: {trip: Trip}) {
@@ -208,7 +211,7 @@ export default {
         })
       }
 
-      syncTrip(state, trip)
+      syncTrip(state.mode, trip)
     },
 
     reassignJob (state: TripsState, options: {trip: Trip, team: KeyableTrip | null}) {
@@ -238,7 +241,7 @@ export default {
       toSchedule.trips.push(trip)
       toSchedule.rows = packTrips(toSchedule.trips)
 
-      syncTrip(state, trip)
+      syncTrip(state.mode, trip)
     },
 
     updateTeams (state: TripsState, teams: Team[]) {
@@ -257,7 +260,7 @@ export default {
         {} as ScheduleByTeam
       )
       if (!state.savesDisabled) {
-        syncTeams(state, state.teams)
+        syncTeams(state.mode, state.teams)
       }
     },
 
@@ -299,10 +302,10 @@ export default {
         })
       )
       // syncSchedules(date, state.scheduleByTeam)
-      syncTeams(state, state.teams)
+      syncTeams(state.mode, state.teams)
       _.values(tripsByKey).forEach((trips: Trip[]) => {
         trips.forEach(trip => {
-          syncTrip(state, trip)
+          syncTrip(state.mode, trip)
         })
       })
     },
@@ -330,7 +333,7 @@ export default {
       if (!state.savesDisabled) {
         // FIXME: This is bad form! -- async actions
         // on global state inside a synchronous fn
-        syncTrip(state, trip)
+        syncTrip(state.mode, trip)
       }
     },
 
@@ -339,14 +342,11 @@ export default {
       const trip = schedule.trips[options.tripIndex]
       schedule.trips.splice(options.tripIndex, 1)
       schedule.rows = packTrips(schedule.trips)
-      syncDeleteTrip(state, trip)
+      syncDeleteTrip(state.mode, trip)
     },
 
-    _setTimestamp(state: TripsState, timestamp: number) {
-      state.mode = {
-        type: 'date',
-        timestamp
-      }
+    _setMode(state: TripsState, mode: AppMode) {
+      state.mode = mode
     },
 
     _disableSaves (state: TripsState, data: any) {
@@ -365,11 +365,22 @@ export default {
   },
 
   actions: {
-    setDate(context: any, date: Date) {
+    setMode(context: any, mode: AppMode) {
       const state = context.state as TripsState
+      const currentMode = state.mode
 
-      const teamsPromise = readTeams(date)
-      const tripsPromise = readTrips(date)
+      if (currentMode.type === 'date' && mode.type === 'date') {
+        if (currentMode.timestamp === mode.timestamp) {
+          return
+        }
+      } else if (currentMode.type === 'template' && mode.type === 'template') {
+        if (currentMode.template === mode.template) {
+          return
+        }
+      }
+
+      const teamsPromise = readTeams(state.mode)
+      const tripsPromise = readTrips(state.mode)
 
       const promise = Promise.all([
         teamsPromise, tripsPromise
@@ -380,10 +391,9 @@ export default {
           context.commit('updateTeams', teams)
           // context.commit('') // No trips to commit?
           context.commit('_setSchedules', schedules)
-          context.commit('_setTimestamp', date.getTime())
+          context.commit('_setMode', mode)
           context.commit('_enableSaves')
-          const dateString = formatDate(date)
-          window.history.pushState(null, dateString, '#' + querystring.stringify({date: dateString}))
+          pushModeToHistory(mode)
         }
       })
 
@@ -392,20 +402,20 @@ export default {
   }
 }
 
-function getRelPath(state: TripsState): string {
-  if (state.mode.type === 'date') {
-    return formatDate(new Date(state.mode.timestamp))
+function getRelPath(mode: AppMode): string {
+  if (mode.type === 'date') {
+    return formatDate(new Date(mode.timestamp))
   } else {
-    return state.mode.template
+    return mode.template
   }
 }
 
-function formatDate(date: Date) {
+export function formatDate(date: Date) {
   return dateformat(date, 'yyyy-mm-dd')
 }
 
-function syncTeams(state: TripsState, teams: KeyableTrip[]) {
-  db.ref(`/teams/${getRelPath(state)}`)
+function syncTeams(mode: AppMode, teams: KeyableTrip[]) {
+  db.ref(`/teams/${getRelPath(mode)}`)
     .set(serializeArray(teams))
 }
 
@@ -436,8 +446,8 @@ export function deserializeArray(o: {[key: string]: any}): any[] {
   return keys.map(s => o[s[0]])
 }
 
-export function readTeams(date: Date): Promise<Team[]> {
-  return db.ref(`/teams/${formatDate(date)}`)
+export function readTeams(mode: AppMode): Promise<Team[]> {
+  return db.ref(`/teams/${getRelPath(mode)}`)
   .once('value')
   .then((values: Firebase.database.DataSnapshot) => {
     const v = values.val() || {}
@@ -536,13 +546,13 @@ function packTrips(trips: Trip[]): number[][] {
 }
 
 // TODO: We may want to partition by trips by date, and fetch them all
-function syncTrip(state: TripsState, trip: Trip) {
+function syncTrip(mode: AppMode, trip: Trip) {
   trip.id = trip.id || uniqueId()
-  db.ref(`/trips/${getRelPath(state)}/${trip.id}`).set(trip)
+  db.ref(`/trips/${getRelPath(mode)}/${trip.id}`).set(trip)
 }
-function syncDeleteTrip(state: TripsState, trip: Trip) {
+function syncDeleteTrip(mode: AppMode, trip: Trip) {
   assert(trip.id, 'Wanted to delete a trip without an ID')
-  db.ref(`/trips/${getRelPath(state)}/${trip.id}`).set(null)
+  db.ref(`/trips/${getRelPath(mode)}/${trip.id}`).set(null)
 }
 
 function parseLatLng(o: any): LatLng | null {
@@ -560,8 +570,8 @@ function parseLatLng(o: any): LatLng | null {
   }
 }
 
-function readTrips(date: Date): Promise<Trip[]> {
-  return db.ref(`/trips/${formatDate(date)}`)
+export function readTrips(mode: AppMode): Promise<Trip[]> {
+  return db.ref(`/trips/${getRelPath(mode)}`)
   .once('value')
   .then(v => {
     const value = v.val() || {}

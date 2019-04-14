@@ -14,7 +14,8 @@ import _ from 'lodash'
 // import axios from 'axios'
 import querystring from 'querystring'
 import Vault from '@/vault'
-import singaporeColors,{ LatLng } from '@/lib/singaporeColors'
+import singaporeColors from '@/lib/singaporeColors'
+import {LatLng} from '@/lib/types'
 
 /**
  * This takes in a structured object for a location --:

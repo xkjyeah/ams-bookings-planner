@@ -124,10 +124,6 @@
     border: dashed 1px #ccc;
     flex: 0 0 calc((100% - 3em) / 3);
   }
-
-  .placeholder {
-    color: #888;
-  }
 }
 </style>
 <script lang="ts">

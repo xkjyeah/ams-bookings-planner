@@ -32,6 +32,7 @@
 table.manifest-table {
   border-collapse: collapse;
   border: solid 1px black;
+  width: 100%;
 
   td, th {
     border: dotted 1px #888;
