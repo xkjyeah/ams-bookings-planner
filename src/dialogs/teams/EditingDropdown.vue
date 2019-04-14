@@ -1,40 +1,65 @@
 <template>
   <v-menu offset-y bottom allow-overflow :value="showMenu"
       :close-on-click="false"
-      :close-on-content-click="false">
+      :close-on-content-click="false"
+      >
     <template v-slot:activator="activator">
-      <input
-        type="text"
-        ref="myinput"
-        v-model="searchInput"
-        @input="showMenu = true"
-        @blur="handleBlur"
-        @keydown.down="selectNext"
-        @keydown.up="selectPrev"
-        @keydown.enter="selectCurrent"
-        @keydown.esc="showMenu = false"
-        v-bind="$attrs"
-      />
+      <v-layout class="layout"
+        ref="inputParent">
+        <input
+          type="text"
+          ref="myinput"
+          v-model="searchInput"
+          @input="handleShowMenu"
+          @blur="handleBlur"
+          @focus="handleFocus"
+          @keydown.down="selectNext"
+          @keydown.down.alt="handleShowMenu"
+          @keydown.up="selectPrev"
+          @keydown.enter="selectCurrent"
+          @keydown.esc="showMenu = false"
+          v-bind="$attrs"
+        />
+        <!-- Make the following focusable, so that we
+        can check the `relatedTarget` of the blur event
+        and cancel the blur if this is clicked -->
+        <v-icon class="menu-chevron"
+          tabindex="-1"
+          @click.native="handleShowMenu">expand_more</v-icon>
+      </v-layout>
     </template>
     <v-list class="list"
+        tabindex="-1"
         ref="selectionItems">
       <div v-for="item in listItems" :key="item.value"
           :class="{active: isSelected(item)}"
           class="list-tile"
-          @click.prevent="handleSelect(item)">
+          @click.prevent="handleClick(item)">
         {{item.value}}
       </div>
     </v-list>
   </v-menu>
 </template>
 <style lang="scss" scoped>
-input {
-  display: block;
+.layout {
+  display: flex;
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  border: solid 1px red;
+  input {
+    flex: 1 1 auto;
+    align-self: stretch;
+    border: solid 1px red;
+    box-sizing: border-box;
+  }
+  .menu-chevron {
+    flex: 0 0 auto;
+    user-select: none;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
 }
 .list {
   max-height: 200px;
@@ -112,6 +137,7 @@ export default Vue.extend({
       searchInput: null as string | null,
       showMenu: false as boolean,
       selection: -1,
+      blurTimeout: null as number | null,
     }
   },
 
@@ -139,26 +165,81 @@ export default Vue.extend({
   },
 
   methods: {
+    handleClick(item: {text: any, value: any}): void {
+      this.handleSelect(item)
+      this.focusBack()
+
+      setTimeout(() => {
+        this.focusBack()
+      }, 1)
+    },
+
     handleSelect(item: {text: any, value: any}): void {
+      console.log('handleSelect')
       this.$emit('input', item.value)
       this.showMenu = false
       this.searchInput = item.text
       this.selection = -1
-      ; (this.$refs.myinput as HTMLInputElement).focus()
     },
 
     handleBlur(e: FocusEvent): void {
       // user may have clicked on a list item -- so don't
       // hide the menu immediately
-      this.$emit('input', (
-        (this.selection !== -1 && this.listItems[this.selection].value) ||
-        this.searchInput ||
-        ''
-      ).trim() || null)
-      setTimeout(() => {
+      const target = e.relatedTarget
+      if (target &&
+        target instanceof HTMLElement &&
+        (
+          isDescendentOf(
+            target,
+            this.$refs.inputParent as Element as HTMLElement) ||
+          isDescendentOf(
+            target,
+            (this.$refs.selectionItems as Vue).$el as Element as HTMLElement)
+        )
+      ) {
+        return
+      }
+
+      console.log('handleBlur', e.relatedTarget)
+      this.blurTimeout = setTimeout(() => {
+        console.log('blurTimeout')
+        this.$emit('input', (
+          (this.selection !== -1 && this.listItems[this.selection].value) ||
+          this.searchInput ||
+          ''
+        ).trim() || null)
+
         this.showMenu = false
+        this.blurTimeout = null
         this.$emit('blur')
       }, 1)
+    },
+
+    // If we programmatically bring back focus,
+    // clear the blur timeout
+    handleFocus(e?: FocusEvent): void {
+      if (this.blurTimeout !== null) {
+        console.log('clearing timeout')
+        clearTimeout(this.blurTimeout)
+        this.blurTimeout = null
+      } else {
+        console.log('nothing to clear!')
+      }
+    },
+
+    handleShowMenu(): void {
+      console.log('handleShowMenu')
+      this.showMenu = true
+      this.focusBack()
+
+      setTimeout(() => {
+        this.focusBack()
+      }, 1)
+    },
+
+    focusBack() {
+      this.handleFocus()
+      ; (this.$refs.myinput as HTMLInputElement).focus()
     },
 
     selectNext(): void {
@@ -173,17 +254,36 @@ export default Vue.extend({
       }
     },
 
-    selectCurrent(): void {
+    selectCurrent(event: KeyboardEvent): void {
+      event.preventDefault()
       if (this.selection < this.listItems.length &&
         this.selection >= 0) {
         this.handleSelect(this.listItems[this.selection])
+        this.focusBack()
       }
     },
 
     isSelected(item: {text: string, value: string}): boolean {
       return this.listItems[this.selection] === item
+    },
+
+    notify(message: string) {
+      console.log(message)
     }
   }
 })
+
+function isDescendentOf(e: HTMLElement, f: HTMLElement): boolean {
+  let current: HTMLElement | null = e
+
+  console.log('isDescendentOf BEGIN', f)
+  while (current) {
+    console.log(current)
+    if (current === f) return true
+    current = current.parentElement
+  }
+  console.log('isDescendentOf END')
+  return false
+}
 </script>
 
