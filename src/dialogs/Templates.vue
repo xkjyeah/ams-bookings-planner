@@ -1,8 +1,9 @@
 <template>
   <StandardDialog name="templates" title="Trip templates">
-    <v-layout>
+    <v-layout style="height: 75vh">
       <v-list class="template-list-section">
         <v-list-tile v-for="template in templates"
+          :class="{active: selectedTemplateId === template.id}"
           :key="template.id"
           @click="selectedTemplateId = template.id">
           <v-layout>
@@ -64,7 +65,7 @@
 </template>
 <style scoped lang="scss">
 .template-list-section { flex: 1 1 33%; }
-.table-section { flex: 1 1 67%; }
+.table-section { flex: 1 1 67%; overflow-y: scroll; }
 table.templates-table {
   border-collapse: collapse;
   border: solid 1px black;
@@ -85,7 +86,9 @@ table.templates-table {
   tr.cancelled td {
     text-decoration: line-through;
   }
-
+}
+.active {
+  background-color: #9CF;
 }
 </style>
 <script lang="ts">
@@ -114,13 +117,14 @@ export default Vue.extend({
   computed: {
     templates(): TemplateMetadata[] {
       return _.values(this.$store.state.templates.templates)
-    }
+    },
+    dateformat: () => dateformat,
   },
 
   watch: {
     selectedTemplateId(v: string | null) {
       if (v) {
-        readTrips({type: 'template', template: v})
+        readTrips({type: 'template', template: v, lastTimestamp: 0})
         .then((trips: Trip[]) => {
           this.previewTrips = trips
         })
@@ -155,9 +159,13 @@ export default Vue.extend({
     },
 
     startEditingTemplate(template: TemplateMetadata) {
+      const currentMode = this.$store.state.trips.mode as AppMode
       const mode: AppMode = {
         type: 'template',
         template: template.id,
+        lastTimestamp: currentMode.type === 'date'
+          ? currentMode.timestamp
+          : currentMode.lastTimestamp
       }
       this.$store.dispatch('trips/setMode', mode)
       this.$store.commit('dialogs/hideDialog')

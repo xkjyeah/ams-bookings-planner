@@ -10,7 +10,7 @@
           style="flex: 0 0 100px" />
       <h2 v-if="$store.state.trips.mode.type === 'template'">
         <v-icon @click="goBack()">chevron_left</v-icon>
-        {{$store.state.trips.mode.template}}
+        {{templateName}}
       </h2>
 
       <v-radio-group
@@ -117,7 +117,8 @@
   }
 }
 .app-showing-template {
-  background: #009;
+  background: #88F;
+  color: #FFF;
 }
 </style>
 
@@ -127,7 +128,8 @@ import _ from 'lodash';
 import querystring from 'querystring';
 import Vue from 'vue';
 import {Trip, KeyableTrip} from '@/lib/types.ts';
-import {TripsState} from '@/store/trips.ts';
+import {TripsState, AppMode} from '@/store/trips.ts';
+import {TemplateMetadata} from '@/store/templates.ts';
 import {initializeHashWatch} from '@/store/modes'
 import ChartArea from '@/components/chart/ChartArea.vue';
 import TeamList from '@/components/chart/TeamList.vue';
@@ -169,6 +171,16 @@ export default Vue.extend({
     teamSchedules () {
       return (store.getters as any)['trips/teamSchedules']
     },
+
+    templateName (): string | undefined {
+      const mode: AppMode = this.$store.state.trips.mode
+      if (mode.type !== 'template') return
+      const templateId = mode.template
+      const templateMetadata: TemplateMetadata | undefined =
+        (Object.values(this.$store.state.templates.templates) as TemplateMetadata[])
+          .find((t: TemplateMetadata) => t.id === templateId)
+      return templateMetadata ? templateMetadata.name : templateId
+    }
   },
   components: {
     ChartArea,
@@ -214,7 +226,12 @@ export default Vue.extend({
     },
 
     goBack() {
-      window.history.back()
+      const currentMode: AppMode = this.$store.state.trips.mode
+      const targetMode: AppMode = {
+        type: 'date',
+        timestamp: currentMode.type === 'date' ? currentMode.timestamp: currentMode.lastTimestamp
+      }
+      this.$store.dispatch('trips/setMode', targetMode)
     }
   }
 });

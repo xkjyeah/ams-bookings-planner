@@ -17,15 +17,12 @@
         {{tripBeingEdited.description}}
       </h2>
 
-      <v-select
+      <TeamsSelect
         label="Assigned to"
-        :items="$store.state.trips.teams"
-        :item-text="t => `${t.driver}, ${t.medic}`"
-        :item-value="tripKey"
+        :withNull="true"
         :value="tripKey(tripBeingEdited)"
         @input="reassignTripToTeam($event)"
-        >
-      </v-select>
+        />
 
       <v-textarea
         label="Description"
@@ -173,6 +170,7 @@ import Vue from 'vue'
 import { Trip, Team } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
 import TimeEditor from '@/components/common/TimeEditor.vue'
+import TeamsSelect from '@/components/TeamsSelect.vue'
 import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
 import singaporeColors from '@/lib/singaporeColors'
@@ -185,6 +183,7 @@ export default Vue.extend({
     TimeEditor,
     DateEditor,
     PostcodePicker,
+    TeamsSelect,
   },
 
   computed: {

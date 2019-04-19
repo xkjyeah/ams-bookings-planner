@@ -58,6 +58,7 @@ export type AppMode = {
 } | {
   type: 'template',
   template: string,
+  lastTimestamp: number,
 }
 
 export interface TripsState {
@@ -379,8 +380,8 @@ export default {
         }
       }
 
-      const teamsPromise = readTeams(state.mode)
-      const tripsPromise = readTrips(state.mode)
+      const teamsPromise = readTeams(mode)
+      const tripsPromise = readTrips(mode)
 
       const promise = Promise.all([
         teamsPromise, tripsPromise

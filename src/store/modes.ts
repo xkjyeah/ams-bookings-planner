@@ -7,7 +7,11 @@ export function pushModeToHistory(mode: AppMode) {
     const dateString = formatDate(new Date(mode.timestamp))
     window.history.pushState(null, dateString, '#' + querystring.stringify({date: dateString}))
   } else if (mode.type === 'template') {
-    window.history.pushState(null, mode.template, '#' + querystring.stringify({template: mode.template}))
+    const dateString = formatDate(new Date(mode.lastTimestamp))
+    window.history.pushState(
+      null,
+      mode.template,
+      '#' + querystring.stringify({template: mode.template, lastTimestamp: dateString}))
   }
 }
 
@@ -21,7 +25,15 @@ export function initializeHashWatch(store: Vuex.Store<any>) {
         : null
     } else if (hash.template) {
       const template = hash.template
-      return {type: 'template', template}
+      const date = new Date(hash.lastTimestamp)
+
+      return {
+        type: 'template',
+        template,
+        lastTimestamp: isFinite(date.getTime())
+          ? date.getTime()
+          : Date.now()
+      }
     }
     return null
   }
