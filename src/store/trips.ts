@@ -88,7 +88,8 @@ export default {
 
   getters: {
     trips (state: TripsState) {
-      return _
+      return _.flatten(Object.values(state.scheduleByTeam)
+        .map((v: ScheduleData) => v.trips))
     },
 
     rowCount (state: TripsState) {
@@ -605,6 +606,7 @@ export function readTrips(mode: AppMode): Promise<Trip[]> {
           : null,
         cancelled: tripRaw.cancelled || false,
         created: tripRaw.created || Date.now(),
+        templateTrip: tripRaw.templateTrip || null,
       }))
   })
 }

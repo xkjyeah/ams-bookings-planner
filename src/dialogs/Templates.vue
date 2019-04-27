@@ -33,39 +33,68 @@
         </v-list-tile>
       </v-list>
       <div class="table-section">
-        <table class="templates-table">
-          <thead>
-            <tr>
-              <th>Team</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody v-if="previewTrips">
-            <tr v-for="trip in previewTrips" :key="trip.id"
-                :class="{cancelled: trip.cancelled}">
-              <td>{{trip.driver}}, {{trip.medic}}</td>
-              <td>{{dateformat(trip.startTime, 'HH:MM', true)}}</td>
-              <td>{{trip.endTime && dateformat(trip.endTime, 'HH:MM', true)}}</td>
-              <td>
-                <div>{{trip.description}}</div>
-                <div v-if="trip.startAddress || trip.startLocation">
-                  <b>From: </b>{{trip.startAddress}} {{trip.startLocation}}</div>
-                <div v-if="trip.endAddress || trip.endLocation">
-                  <b>To: </b>{{trip.endAddress}} {{trip.endLocation}}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <v-item-group class="table-toolbar" @click="addTemplateJobsToSchedule"
+            v-if="previewTrips">
+          <v-btn>Add All</v-btn>
+        </v-item-group>
+        <div class="table-scroll">
+          <table class="templates-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody v-if="previewTrips">
+              <tr v-for="trip in previewTrips" :key="trip.id"
+                  :class="{cancelled: trip.cancelled}">
+                <td>{{trip.driver}}, {{trip.medic}}</td>
+                <td>{{dateformat(trip.startTime, 'HH:MM', true)}}</td>
+                <td>{{trip.endTime && dateformat(trip.endTime, 'HH:MM', true)}}</td>
+                <td>
+                  <div>{{trip.description}}</div>
+                  <div v-if="trip.startAddress || trip.startLocation">
+                    <b>From: </b>{{trip.startAddress}} {{trip.startLocation}}</div>
+                  <div v-if="trip.endAddress || trip.endLocation">
+                    <b>To: </b>{{trip.endAddress}} {{trip.endLocation}}
+                  </div>
+                </td>
+                <td>
+                  <template v-if="$store.state.trips.mode.type === 'date'">
+                    <v-btn v-if="!scheduleHasTrip(trip)"
+                      @click="addTripToSchedule(trip)"
+                      icon><v-icon>add</v-icon></v-btn>
+                    <div v-else>
+                      <a href="#" @click.prevent="scrollToTrip(templateToScheduledTrip[trip.id])">
+                        {{trip.driver}}, {{trip.medic}}
+                        <br/>
+                        {{dateformat(trip.startTime, 'HH:MM', true)}}
+                      </a>
+                    </div>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </v-layout>
   </StandardDialog>
 </template>
 <style scoped lang="scss">
 .template-list-section { flex: 1 1 33%; }
-.table-section { flex: 1 1 67%; overflow-y: scroll; }
+.table-section {
+  flex: 1 1 67%;
+  display: flex;
+  flex-direction: column;
+  .table-scroll {
+    flex: 1 1 auto;
+    overflow-y: scroll;
+  }
+}
 table.templates-table {
   border-collapse: collapse;
   border: solid 1px black;
@@ -104,6 +133,7 @@ import { db } from '@/lib/firebase';
 import _ from 'lodash';
 import uniqueId from '@/lib/uniqueId';
 import { TemplateMetadata } from '@/store/templates';
+import scrollHelper from '@/lib/scrollHelper';
 
 export default Vue.extend({
   data () {
@@ -119,11 +149,23 @@ export default Vue.extend({
       return _.values(this.$store.state.templates.templates)
     },
     dateformat: () => dateformat,
+    templateToScheduledTrip (): {[id: string]: Trip} {
+      return _.keyBy(
+        this.$store.getters['trips/trips']
+          .filter((v: Trip) => v.templateTrip),
+        'templateTrip'
+      )
+    },
+    scheduleHasTrip (): (trip: Trip) => Boolean {
+      return (trip: Trip) => trip.id in this.templateToScheduledTrip
+    },
   },
 
   watch: {
     selectedTemplateId(v: string | null) {
       if (v) {
+        this.previewTrips = null
+
         readTrips({type: 'template', template: v, lastTimestamp: 0})
         .then((trips: Trip[]) => {
           this.previewTrips = trips
@@ -169,7 +211,41 @@ export default Vue.extend({
       }
       this.$store.dispatch('trips/setMode', mode)
       this.$store.commit('dialogs/hideDialog')
-    }
+    },
+
+    addTemplateJobsToSchedule(template: string): void {
+      if (!this.previewTrips) return
+
+      for (let trip of this.previewTrips) {
+        if (!this.scheduleHasTrip(trip)) {
+          this.addTripToSchedule(trip)
+        }
+      }
+    },
+
+    addTripToSchedule(trip: Trip): void {
+      if (this.$store.state.trips.mode.type === 'date') {
+        const newTrip: Trip = {
+          ...trip,
+          created: Date.now(),
+          templateTrip: trip.id,
+          id: uniqueId(),
+        }
+        this.$store.commit('trips/assignNewlyCreatedJob', {trip: newTrip})
+      }
+    },
+
+    scrollToTrip(trip: Trip): void {
+      this.$store.commit('dialogs/hideDialog')
+      this.$store.commit('tripEditing/editTrip', {
+        team: trip,
+        index: this.$store.state.trips.scheduleByTeam[
+          tripKey(trip)
+        ].trips.findIndex(t => t.id === trip.id)
+      })
+      scrollHelper.$emit('scrollToTime', trip.startTime)
+      scrollHelper.$emit('scrollToTeam', tripKey(trip))
+    },
   }
 })
 </script>

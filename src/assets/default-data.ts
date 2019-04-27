@@ -684,6 +684,7 @@ export default function (): Job[] {
       endLocation: null,
       startLatLng: null,
       endLatLng: null,
+      templateTrip: null,
     }))
   return r
 }

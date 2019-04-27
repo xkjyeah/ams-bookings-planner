@@ -36,6 +36,7 @@ export type Trip = JobBase & {
   endLatLng: LatLng | null,
 
   created: number,
+  templateTrip: string | null,
 }
 export interface Job {
   trip: Trip,

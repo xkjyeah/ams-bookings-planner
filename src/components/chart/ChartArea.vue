@@ -88,6 +88,7 @@ import CurrentTime from '@/components/chart/CurrentTime.vue';
 import TripBar from '@/components/chart/TripBar.vue';
 import VehicleMarker from '@/components/chart/VehicleMarker.vue';
 import store from '@/store';
+import scrollHelper from '@/lib/scrollHelper'
 
 export default Vue.extend({
   name: 'app',
@@ -137,6 +138,9 @@ export default Vue.extend({
         this.scrollToCurrentTime()
       })
     }
+  },
+  created () {
+    scrollHelper.$on('scrollToTime', (time) => {this.scrollToTime(time)})
   },
   methods: {
     // Ensure that "now" is at ~33% of the page

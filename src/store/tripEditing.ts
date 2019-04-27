@@ -122,6 +122,7 @@ export default {
         relatedTrip: null,
         description: 'New trip $100',
         cancelled: false,
+        templateTrip: '',
       }
 
       context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})
