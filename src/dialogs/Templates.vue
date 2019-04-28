@@ -239,9 +239,9 @@ export default Vue.extend({
       this.$store.commit('dialogs/hideDialog')
       this.$store.commit('tripEditing/editTrip', {
         team: trip,
-        index: this.$store.state.trips.scheduleByTeam[
+        index: (this.$store.state.trips as TripsState).scheduleByTeam[
           tripKey(trip)
-        ].trips.findIndex(t => t.id === trip.id)
+        ].trips.findIndex((t: Trip) => t.id === trip.id)
       })
       scrollHelper.$emit('scrollToTime', trip.startTime)
       scrollHelper.$emit('scrollToTeam', tripKey(trip))
