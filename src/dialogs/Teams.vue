@@ -12,7 +12,7 @@
 
       <div class="teams-grid">
         <div class="action">
-          <span @click="dropTeam(i)" v-if="!teamHasTrips(team)">
+          <span @click="dropTeam(i)" v-if="!teamHasTrips(team)" style="cursor: pointer">
             <v-icon>delete</v-icon>
           </span>
         </div>
@@ -21,7 +21,7 @@
           <PersonView :value="team.driver" placeholder="(Driver)" />
           <template v-slot:editor="editor">
             <EditingDropdown
-              :items="defaultList"
+              :items="staffList"
               :value="team.driver"
               @blur="editor.blur()"
               @input="updateTeam(i, $event, 'driver')"
@@ -29,10 +29,10 @@
           </template>
         </EditingCell>
         <EditingCell class="cell" :disabled="teamHasTrips(team)">
-          {{team.medic}}
+          <PersonView :value="team.medic" placeholder="(Medic)" />
           <template v-slot:editor="editor">
             <EditingDropdown
-              :items="defaultList"
+              :items="staffList"
               :value="team.medic"
               @blur="editor.blur()"
               @input="updateTeam(i, $event, 'medic')"
@@ -60,33 +60,24 @@
       </v-alert>
     </div>
     <div class="teams-grid">
-
       <div class="action">
         (New)
       </div>
-
       <EditingCell class="cell">
-        <template v-if="newTeam.driver">
-          {{newTeam.driver}}
-        </template>
-        <span v-else class="placeholder">(Driver)</span>
+        <PersonView :value="newTeam.driver" placeholder="(Driver)" />
         <template v-slot:editor="editor">
           <EditingDropdown
-            :items="defaultList"
-            :value="newTeam.driver"
+            :items="staffList"
             @input="newTeam.driver = $event"
             @blur="editor.blur()"
           />
         </template>
       </EditingCell>
       <EditingCell class="cell">
-        <template v-if="newTeam.medic">
-          {{newTeam.medic}}
-        </template>
-        <span v-else class="placeholder">(Medic)</span>
+        <PersonView :value="newTeam.medic" placeholder="(Driver)" />
         <template v-slot:editor="editor">
           <EditingDropdown
-            :items="defaultList"
+            :items="staffList"
             :value="newTeam.medic"
             @input="newTeam.medic = $event"
             @blur="editor.blur()"
@@ -142,13 +133,7 @@ import assert from 'assert';
 export default Vue.extend({
   data () {
     return {
-      defaultList: [
-        'Arsad','Azrul','Bernard','Charlie','Christian','Ema','Erifin','Farhan',
-        'FC Sam','Govin','Heman','Huq','Jack','James','Jamil','Jimmy','Keith','Khaw','Kid',
-        'Loo','Mahmod','Mala','Meeran','Mohan','Muzaimi','Nonito','Obon','Peter','Razali',
-        'Rezal','Roshan','Sam','Sapari','Seng','Sephora','Simon','Siti','Steven','Sufi','Sun',
-        'Tj','Tony','Wen','Xandra','Yasin','Yatim','Yazid','Zhelter','Zie','Zol',
-      ],
+      defaultList: [],
 
       newTeam: {
         driver: null,
@@ -179,7 +164,7 @@ export default Vue.extend({
       return (store.state.trips as TripsState).teams || []
     },
     staffList (): ({text: string, value: string}[]) {
-      return this.defaultList.map(s => ({text: s, value: s}))
+      return _.sortBy(this.$store.getters['vehicles/personArray'].map(s => s.name))
     },
     scheduleByTeam () {
       return (store.state.trips.scheduleByTeam) as ScheduleByTeam
@@ -282,27 +267,29 @@ export default Vue.extend({
 
     maybeCreateTeam (): void {
       if (this.newTeam.driver || this.newTeam.medic) {
-        const {driver, medic} = this.newTeam
+        setTimeout(() => {
+          const {driver, medic} = this.newTeam
 
-        if (this.teamExists(null, this.newTeam)) {
-          return this.flashError('new', `This team (${driver}, ${medic}) already exists`)
-        }
-
-        store.commit('trips/updateTeams', this.teams.concat([
-          {driver, medic, vehicle: null}
-        ]))
-        this.newTeam = {driver: null, medic: null, vehicle: null}
-        this.$nextTick(() => {
-          const key = `${driver},${medic}`
-          const wrapper = (this.$refs.teamsGrid as Element[] as HTMLElement[])
-            .find(d => d.dataset.key === key)
-          const inputs = wrapper &&
-            [...wrapper.querySelectorAll('.cell')] as HTMLInputElement[] | null
-
-          if (inputs) {
-            inputs[inputs.length - 1].focus()
+          if (this.teamExists(null, this.newTeam)) {
+            return this.flashError('new', `This team (${driver}, ${medic}) already exists`)
           }
-        })
+
+          store.commit('trips/updateTeams', this.teams.concat([
+            {driver, medic, vehicle: null}
+          ]))
+          this.newTeam = {driver: null, medic: null, vehicle: null}
+          this.$nextTick(() => {
+            const key = `${driver},${medic}`
+            const wrapper = (this.$refs.teamsGrid as Element[] as HTMLElement[])
+              .find(d => d.dataset.key === key)
+            const inputs = wrapper &&
+              [...wrapper.querySelectorAll('.cell')] as HTMLInputElement[] | null
+
+            if (inputs) {
+              inputs[inputs.length - 1].focus()
+            }
+          })
+        }, 1)
       }
     }
   }
