@@ -132,10 +132,6 @@ export default Vue.extend({
   computed: {
     sAgo: () => (d: any): string => sAgo(new Date(d)),
 
-    dialogShown () {
-      return (store.state as any).dialogs.activeDialog == 'persons'
-    },
-
     personList () {
       return _.sortBy(
         (store.getters['vehicles/personArray'] as Person[]),

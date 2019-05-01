@@ -77,10 +77,6 @@ export default Vue.extend({
   },
 
   computed: {
-    dialogShown () {
-      return (store.state as any).dialogs.activeDialog == 'manifest'
-    },
-
     dateformat: () => dateformat,
 
     trips (): Trip[] {

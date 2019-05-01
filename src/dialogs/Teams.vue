@@ -119,6 +119,7 @@
 </style>
 <script lang="ts">
 import Vue from 'vue'
+import _ from 'lodash'
 import store from '@/store'
 import {KeyableTrip} from '@/lib/types'
 import {TripsState, ScheduleByTeam, tripKey} from '@/store/trips'
@@ -154,9 +155,6 @@ export default Vue.extend({
   },
 
   computed: {
-    dialogShown () {
-      return (store.state as any).dialogs.activeDialog == 'teams'
-    },
     vehicles () {
       return ((store.state as any).vehicles as VehiclesState).vehicles
     },

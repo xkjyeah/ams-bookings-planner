@@ -97,12 +97,6 @@ export default Vue.extend({
     StandardDialog,
   },
 
-  computed: {
-    dialogShown () {
-      return (store.state as any).dialogs.activeDialog == 'importTeams'
-    },
-  },
-
   methods: {
     handleDialogInput () {
       this.$store.commit('dialogs/hideDialog')

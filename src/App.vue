@@ -51,6 +51,9 @@
           <v-list-tile @click="showDialog('templates')">
             Manage job templates
           </v-list-tile>
+          <v-list-tile @click="showDialog('messages')">
+            Message Log
+          </v-list-tile>
         </v-list>
       </v-menu>
     </v-layout>
@@ -76,6 +79,7 @@
     <TeamsDialog />
     <PersonsDialog />
     <ManifestDialog />
+    <MessagesDialog />
     <ImportTeamsDialog />
     <TemplatesDialog />
   </v-app>
@@ -139,6 +143,7 @@ import DatePicker from '@/components/DatePicker.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
 import ManifestDialog from '@/dialogs/Manifest.vue';
+import MessagesDialog from '@/dialogs/Messages.vue';
 import TemplatesDialog from '@/dialogs/Templates.vue';
 import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
@@ -187,6 +192,7 @@ export default Vue.extend({
     DatePicker,
     ImportTeamsDialog,
     ManifestDialog,
+    MessagesDialog,
     PersonsDialog,
     TimeUpdater,
     TeamList,
