@@ -142,10 +142,12 @@ export default Vue.extend({
 
       if ((this as any as TeamListData).destinationIndex < 0) return
 
-      this.$store.commit('trips/reorderTeam', {
-        oldIndex: this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).dragIndex),
-        newIndex: this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).destinationIndex)
-      })
+      const oldIndex = this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).dragIndex)
+      const newIndex = this.$store.getters['trips/teamIndexForRow']((this as any as TeamListData).destinationIndex)
+
+      if (oldIndex === null || newIndex === null) return
+
+      this.$store.commit('trips/reorderTeam', {oldIndex, newIndex})
 
       ;(this as any as TeamListData).isDragging = false
       ;(this as any as TeamListData).dragIndex = -1

@@ -125,7 +125,7 @@ export default {
         )
     },
 
-    teamIndexForRow (state: TripsState): ((i: number) => number) {
+    teamIndexForRow (state: TripsState): ((i: number) => number | null) {
       return (i: number) => {
         let offset = 0
         let index = 0
@@ -137,7 +137,7 @@ export default {
           offset += rows.length
           index += 1
         }
-        throw new Error(`Couldn\'t find team for row ${i}`)
+        return null
       }
     },
 

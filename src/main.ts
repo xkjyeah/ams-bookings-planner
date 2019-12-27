@@ -1,6 +1,6 @@
 import Vue from '@/vue-with-plugins'
 import Vuetify from 'vuetify'
-import App from './App.vue'
+import AppRoot from './AppRoot.vue'
 import store from './store'
 import Vault from '@/vault'
 import * as VueGoogleMaps from 'vue2-google-maps';
@@ -28,5 +28,5 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 new (Vue as any)({
   store,
-  render: (h: any) => h(App)
+  render: (h: any) => h(AppRoot)
 }).$mount('#app')

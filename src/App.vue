@@ -1,10 +1,10 @@
 <template>
-  <v-app class="app">
+  <v-layout column class="app-app">
     <v-layout class="controls" row
         :class="{
           'app-showing-template': $store.state.trips.mode.type === 'template'
         }"
-        align-content-start
+
     >
       <DatePicker v-if="$store.state.trips.mode.type === 'date'"
           style="flex: 0 0 100px" />
@@ -13,7 +13,7 @@
         {{templateName}}
       </h2>
 
-      <v-radio-group
+      <!-- <v-radio-group
         row
         v-model="xAxisScale">
         <v-radio
@@ -28,7 +28,11 @@
           label="Large"
           :value="400"
           />
-      </v-radio-group>
+      </v-radio-group> -->
+      <v-spacer />
+      <div>
+        {{$store.state.login.user}}
+      </div>
       <v-btn @click="showDialog('manifest')">
         Show Manifest
       </v-btn>
@@ -53,6 +57,10 @@
           </v-list-tile>
           <v-list-tile @click="showDialog('messages')">
             SMS History
+          </v-list-tile>
+          <v-divider />
+          <v-list-tile @click="signOut()">
+            Sign out
           </v-list-tile>
         </v-list>
       </v-menu>
@@ -86,7 +94,7 @@
       v-bind="$store.state.dialogs.props"/>
     <ImportTeamsDialog v-else-if="$store.state.dialogs.activeDialog === 'importTeams'" />
     <TemplatesDialog v-else-if="$store.state.dialogs.activeDialog === 'templates'" />
-  </v-app>
+  </v-layout>
 </template>
 
 <style lang="scss">
@@ -95,6 +103,9 @@
 }
 .placeholder {
   color: #888;
+}
+.app-app {
+  min-height: 100vh;
 }
 </style>
 
@@ -155,6 +166,7 @@ import VehiclesSync from '@/sync/VehiclesSync.vue';
 import TripsSync from '@/sync/TripsSync.vue';
 import store from '@/store';
 import defaultData from '@/assets/default-data';
+import {auth} from '@/lib/firebase'
 
 export default Vue.extend({
   name: 'app',
@@ -246,7 +258,11 @@ export default Vue.extend({
         timestamp: currentMode.type === 'date' ? currentMode.timestamp: currentMode.lastTimestamp
       }
       this.$store.dispatch('trips/setMode', targetMode)
-    }
+    },
+
+    signOut () {
+      this.$store.dispatch('login/signOut')
+    },
   }
 });
 </script>

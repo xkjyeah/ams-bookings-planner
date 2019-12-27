@@ -6,11 +6,13 @@ import Vehicles from '@/store/vehicles.ts'
 import Dialogs from '@/store/dialogs.ts'
 import TripEditing from '@/store/tripEditing.ts'
 import Templates from '@/store/templates';
+import Login from './store/login';
 
 export default new Vuex.Store({
   modules: {
     screen: Screen,
     time: Time,
+    login: Login,
     trips: Trips,
     dialogs: Dialogs,
     vehicles: Vehicles,

@@ -30,4 +30,5 @@ TODO:
 14. [ ] Allow driver/medics to have starting/ending times/locations?
   - [X] SMS support
 22. [X] Multi-user collaboration
-23. [ ] Fix the tabbing mechanism. Maybe simplify it?
+23. [~] Fix the tabbing mechanism. Maybe simplify it?
+24. [ ] Login mechanism
