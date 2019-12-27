@@ -16,6 +16,7 @@
       </span>
       <template v-if="i < persons.length - 1">,</template>
     </template>
+    <hr/>
     <v-textarea
       label="Message"
       v-model="m.message"
@@ -24,9 +25,15 @@
       />
 
     <v-btn
+      color="primary"
       @click="sendMessageAndClose"
-      >
+    >
       Send
+    </v-btn>
+    <v-btn
+      @click="$store.commit('dialogs/hideDialog')"
+      >
+      Cancel
     </v-btn>
 
   </StandardDialog>
@@ -83,7 +90,7 @@ export default Vue.extend({
     sendMessageAndClose(): void {
       (this.$messageClient as MessageClient).createMessage({
         recipients: this.m.recipients,
-        message: this.m.message,
+        message: this.m.message.trim(),
       })
       store.commit('dialogs/hideDialog')
     }

@@ -1,6 +1,6 @@
 <template>
   <v-select
-    :items="$store.state.trips.teams"
+    :items="teams"
     :item-text="t => (t.driver && t.medic) ? `${t.driver}, ${t.medic}` : '(Not assigned)'"
     :item-value="tripKey"
     :value="value"

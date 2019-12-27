@@ -9,6 +9,27 @@
           >
           <v-icon>message</v-icon>
         </v-btn>
+        <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
+          <template v-slot:activator="{on}">
+            <v-btn v-on="on" icon>
+              <v-icon>looks_two</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-tile @click="createReturnTrip(2 * 3600e3)">
+              Return trip in 2hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(3 * 3600e3)">
+              Return trip in 3hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(4 * 3600e3)">
+              Return trip in 4hrs
+            </v-list-tile>
+            <v-list-tile @click="createReturnTrip(5 * 3600e3)">
+              Return trip in 5hrs
+            </v-list-tile>
+          </v-list>
+        </v-menu>
         <v-spacer />
         <v-btn
           color="neutral"
@@ -20,17 +41,12 @@
       </v-layout>
     </v-card-actions>
     <v-card-text>
-      <h2>
-        {{tripBeingEdited.description}}
-      </h2>
-
-      <TeamsSelect
-        label="Assigned to"
-        :withNull="true"
-        :value="tripKey(tripBeingEdited)"
-        @input="reassignTripToTeam($event)"
-        />
-
+      <a href="#" @click.prevent="visitRelatedTrip"
+          v-if="tripBeingEdited.relatedTrip">
+        {{tripBeingEdited.isReturnTrip
+          ? 'First trip'
+          : 'Return trip'}}
+      </a>
       <v-textarea
         label="Description"
         :value="tripBeingEdited.description"
@@ -38,6 +54,13 @@
         rows="1"
         auto-grow
         :disabled="tripBeingEdited.cancelled"
+        />
+
+      <TeamsSelect
+        label="Assigned to"
+        :withNull="true"
+        :value="tripKey(tripBeingEdited)"
+        @input="reassignTripToTeam($event)"
         />
 
       <PostcodePicker
@@ -85,40 +108,27 @@
         :disabled="tripBeingEdited.cancelled"
         /> -->
 
-      <v-layout>
-        <div style="width: 80%">
-          <TimeEditor
-            label="Start Time"
-            :value="tripBeingEdited.startTime"
-            @input="updateTrip('startTime', $event)"
-            :disabled="tripBeingEdited.cancelled"
-            />
+        <TimeEditor
+        label="Start Time"
+        :value="tripBeingEdited.startTime"
+        @input="updateTrip('startTime', $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
 
-          <TimeEditor
-            label="End Time"
-            :value="tripBeingEdited.endTime"
-            @input="updateTrip('endTime',
-              $event === null ? null
-              : $event < tripBeingEdited.startTime ? $event + 86400e3
-              : $event)"
-            :disabled="tripBeingEdited.cancelled"
-            />
-        </div>
-        <div>
-          <v-checkbox
-            :input-value="tripBeingEdited.isTentative"
-            @change="updateTrip('isTentative', $event)"
-            label="Timing is tentative"
-            />
-
-          <a href="#" @click.prevent="visitRelatedTrip"
-              v-if="tripBeingEdited.relatedTrip">
-            {{tripBeingEdited.isReturnTrip
-              ? 'First trip'
-              : 'Return trip'}}
-          </a>
-        </div>
-      </v-layout>
+      <TimeEditor
+        label="End Time"
+        :value="tripBeingEdited.endTime"
+        @input="updateTrip('endTime',
+          $event === null ? null
+          : $event < tripBeingEdited.startTime ? $event + 86400e3
+          : $event)"
+        :disabled="tripBeingEdited.cancelled"
+        />
+      <v-checkbox
+        :input-value="tripBeingEdited.isTentative"
+        @change="updateTrip('isTentative', $event)"
+        label="Timing is tentative"
+        />
       <hr/>
       <!-- <SMSSection
         :trip="tripBeingEdited"
@@ -126,27 +136,6 @@
       <hr/>
       <v-layout>
         <v-spacer />
-        <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
-          <template v-slot:activator="{on}">
-            <v-btn v-on="on">
-              Return trip
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-tile @click="createReturnTrip(2 * 3600e3)">
-              Return trip in 2hrs
-            </v-list-tile>
-            <v-list-tile @click="createReturnTrip(3 * 3600e3)">
-              Return trip in 3hrs
-            </v-list-tile>
-            <v-list-tile @click="createReturnTrip(4 * 3600e3)">
-              Return trip in 4hrs
-            </v-list-tile>
-            <v-list-tile @click="createReturnTrip(5 * 3600e3)">
-              Return trip in 5hrs
-            </v-list-tile>
-          </v-list>
-        </v-menu>
         <v-btn
           v-if="deleteAllowed"
           color="error"
@@ -159,7 +148,7 @@
           color="error"
           @click="updateTrip('cancelled', !tripBeingEdited.cancelled)"
           >
-          {{tripBeingEdited.cancelled ? 'Restore the trip' : 'Cancel the trip'}}
+          {{tripBeingEdited.cancelled ? 'Restore trip' : 'Cancel trip'}}
         </v-btn>
       </v-layout>
     </v-card-text>
@@ -181,6 +170,7 @@ import Vue from 'vue'
 import { Trip, Team } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
 import {Person} from '@/store/vehicles'
+import {BLANK_KEY} from '@/store/trips'
 import TimeEditor from '@/components/common/TimeEditor.vue'
 import TeamsSelect from '@/components/TeamsSelect.vue'
 import SMSSection from '@/components/SMSSection.vue'
@@ -274,8 +264,9 @@ export default Vue.extend({
     },
 
     reassignTripToTeam (key: string): void {
-      const team = this.$store.state.trips.teams.find((t: Team) =>
-        tripKey(t) === key)
+      const team = (key === BLANK_KEY)
+        ? {driver: null, medic: null}
+        : this.$store.state.trips.teams.find((t: Team) => tripKey(t) === key)
 
       this.$store.commit('trips/reassignJob', {
         trip: this.tripBeingEdited,

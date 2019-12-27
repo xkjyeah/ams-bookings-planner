@@ -7,6 +7,7 @@
     :value="convertFromTime(value)"
     @change="$emit('input', convertToTime($event.target.value))"
     v-on="_.omit($listeners, ['input', 'change'])"
+    style="width: 5em"
     />
 </v-input>
 </template>

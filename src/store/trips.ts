@@ -88,6 +88,8 @@ export interface TripsState {
   mode: AppMode,
 }
 
+export const BLANK_KEY = tripKey({driver: null, medic: null})
+
 export default {
   namespaced: true,
 
@@ -244,11 +246,26 @@ export default {
       if (state.savesDisabled) return
       if (options.team === null) return
 
-      const fromSchedule = state.scheduleByTeam[tripKey(options.trip)]
-      const toSchedule = state.scheduleByTeam[tripKey(options.team)]
+      const fromKey = tripKey(options.trip)
+      const toKey = tripKey(options.team)
+
+      const fromSchedule = state.scheduleByTeam[fromKey]
+      let toSchedule = state.scheduleByTeam[toKey]
 
       assert(fromSchedule, 'Trip does not exist in From')
-      assert(toSchedule, 'Trip does not exist in To')
+      // Special case: we can *always* unassign a job
+      // So if (null, null) is missing, recreate it
+      if (!toSchedule) {
+        if (toKey !== BLANK_KEY) {
+          assert(toSchedule, 'Trip does not exist in To')
+        } else {
+          toSchedule = state.scheduleByTeam[BLANK_KEY] = {
+            trips: [],
+            rows: [[0]],
+          }
+          state.teams.push({driver: null, medic: null, vehicle: null})
+        }
+      }
 
       // splice the trip
       const index = fromSchedule.trips.findIndex(trip =>
