@@ -1,8 +1,6 @@
 <template>
   <UnobstrusiveTooltip
-    v-bind="{
-      [yIndexFunction(trip) === 0 ? 'bottom' : 'top']: true
-    }"
+    :right="true"
     class="trip-box"
     :class="{
       'is-selected': isSelected,
@@ -18,12 +16,11 @@
       'background': locationGradient,
       color: trip.latLng ? '#FFF' : '#000',
     }"
-    @click.native="$emit('click', $event); tooltipNeeded = false"
-    @mousedown.native="tooltipNeeded = true"
-    :value="tooltipNeeded"
+    @click.native="$emit('click', $event)"
     >
     <div
-      slot="activator">
+      slot="activator"
+      >
       {{trip.description}}
     </div>
     <span>
@@ -92,7 +89,7 @@ export default Vue.extend({
 
   data () {
     return {
-      tooltipNeeded: false,
+      tooltipNeeded: true,
     }
   },
 
@@ -119,7 +116,7 @@ export default Vue.extend({
   methods: {
     presumedDuration (trip: Trip) {
       return imputedEndTime(trip) - trip.startTime
-    }
+    },
   }
 })
 </script>

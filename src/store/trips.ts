@@ -263,7 +263,7 @@ export default {
             trips: [],
             rows: [[0]],
           }
-          state.teams.push({driver: null, medic: null, vehicle: null})
+          state.teams.splice(0, 0, {driver: null, medic: null, vehicle: null})
         }
       }
 

@@ -7,7 +7,8 @@ drag and drop.
   v-bind="$attrs"
   v-on="$listeners"
   @mousedown.native="showTooltip = false"
-  @mouseover.native="showTooltip = true"
+  @mouseover.native="showTooltipIfMouseNotDown"
+  @drag.native="showTooltip = false"
   :value="showTooltip"
   >
   <slot slot="activator" name="activator" />
@@ -20,6 +21,13 @@ export default Vue.extend({
   data () {
     return {
       showTooltip: false,
+    }
+  },
+  methods: {
+    showTooltipIfMouseNotDown(e: MouseEvent) {
+      if (!e.buttons) {
+        this.showTooltip = true
+      }
     }
   }
 })
