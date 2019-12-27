@@ -188,6 +188,8 @@ export default Vue.extend({
         key: tripKey(trip),
         tripIndex,
       })
+      // Firefox insists on this to activate the drag
+      event.dataTransfer!.setData('text/team-reorder-drag', 'dummy')
     },
 
     onDragEnd() {
@@ -204,6 +206,7 @@ export default Vue.extend({
       const team = this.$store.getters['trips/teamForRow'](rowNumber)
 
       if (team === null) return
+      if (alignedStartTime > 23.75 * 3600e3) return
 
       this.$store.dispatch('tripEditing/createAndEditNewTripAtTime', {
         time: alignedStartTime,
