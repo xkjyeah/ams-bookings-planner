@@ -141,7 +141,7 @@ export default {
       }
     },
 
-    teamForRow (state: TripsState): (i: number) => Team {
+    teamForRow (state: TripsState): (i: number) => Team | null {
       return (i: number) => {
         let offset = 0
         for (let team of state.teams) {
@@ -151,11 +151,11 @@ export default {
           }
           offset += rows.length
         }
-        throw new Error(`Couldn\'t find team for row ${i}`)
+        return null
       }
     },
 
-    canonicalOffsetForRow (state: TripsState) {
+    canonicalOffsetForRow (state: TripsState): (i: number) => number | null {
       return (i: number) => {
         let offset = 0
         for (let team of state.teams) {
@@ -165,7 +165,7 @@ export default {
           }
           offset += rows.length
         }
-        throw new Error(`Couldn\'t find team for row ${i}`)
+        return null
       }
     },
 

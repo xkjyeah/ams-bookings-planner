@@ -60,6 +60,7 @@
 
           v-draggable
           @dragstart.native="onDragStart($event, trip, data.tripIndices[j])"
+          @dragend.native="onDragEnd()"
           />
       </template>
       <template v-for="([team, data], i) in teamSchedules">
@@ -89,6 +90,7 @@ import TripBar from '@/components/chart/TripBar.vue';
 import VehicleMarker from '@/components/chart/VehicleMarker.vue';
 import store from '@/store';
 import scrollHelper from '@/lib/scrollHelper'
+import * as tripReassignment from './tripReassignment'
 
 export default Vue.extend({
   name: 'app',
@@ -180,14 +182,16 @@ export default Vue.extend({
     },
 
     onDragStart(event: DragEvent, trip: Trip, tripIndex: number) {
-      event.dataTransfer!.setData(
-        'text/trip-reassign',
-        JSON.stringify({
-          start: trip.startTime,
-          end: imputedEndTime(trip),
-          key: tripKey(trip),
-          tripIndex,
-        }))
+      tripReassignment.setData({
+        start: trip.startTime,
+        end: imputedEndTime(trip),
+        key: tripKey(trip),
+        tripIndex,
+      })
+    },
+
+    onDragEnd() {
+      tripReassignment.setData(null)
     },
 
     createNewTrip (event: MouseEvent) {
@@ -197,9 +201,13 @@ export default Vue.extend({
         event.offsetX / this.xAxisScale / 0.25
       ) * .25 * 3600e3
       const rowNumber = Math.floor(event.offsetY / this.yAxisScale)
+      const team = this.$store.getters['trips/teamForRow'](rowNumber)
+
+      if (team === null) return
+
       this.$store.dispatch('tripEditing/createAndEditNewTripAtTime', {
         time: alignedStartTime,
-        ...(this.$store.getters['trips/teamForRow'](rowNumber)),
+        ...team,
       })
     },
   }

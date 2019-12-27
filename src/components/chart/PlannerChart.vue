@@ -81,6 +81,7 @@
 import Vue from 'vue'
 import { KeyableTrip } from '@/lib/types';
 import store from '@/store';
+import * as tripReassignment from './tripReassignment'
 
 export default Vue.extend({
   data () {
@@ -138,31 +139,38 @@ export default Vue.extend({
     },
 
     onDragOver(event: DragEvent) {
-      if (!event.dataTransfer!.getData('text/trip-reassign')) {
+      const data = tripReassignment.getData()
+      if (!data) {
         return
       }
       event.preventDefault()
       event.dataTransfer!.dropEffect = 'move'
 
-      const data = JSON.parse(event.dataTransfer!.getData('text/trip-reassign'))
       const {start, end} = data
 
       const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
+      const canonicalOffsetForRow = this.$store.getters['trips/canonicalOffsetForRow'](Math.floor(y / this.yAxisScale))
+      if (canonicalOffsetForRow === null) {
+        event.dataTransfer!.dropEffect = 'none'
+        this.drag.row = -1
+        return
+      }
+
       // Show preview of destination
       // Compute row, width
-      this.drag.row = this.$store.getters['trips/canonicalOffsetForRow'](Math.floor(y / this.yAxisScale))
+      this.drag.row = canonicalOffsetForRow
       this.drag.start = start
       this.drag.end = end
     },
 
     onDrop(event: DragEvent) {
-      if (!event.dataTransfer!.getData('text/trip-reassign')) {
+      const data = tripReassignment.getData()
+      if (!data) {
         return
       }
       const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
-      const data = JSON.parse(event.dataTransfer!.getData('text/trip-reassign'))
       const {key, tripIndex} = data
 
       const row = Math.floor(y / this.yAxisScale)
