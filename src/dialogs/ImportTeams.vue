@@ -76,7 +76,7 @@ import _ from 'lodash'
 import Vue from 'vue'
 import store from '@/store'
 import {Team, KeyableTrip} from '@/lib/types'
-import {TripsState, ScheduleByTeam, tripKey, deserializeArray, readTeams} from '@/store/trips'
+import {TripsState, ScheduleByTeam, tripKey, deserializeArray, readTeams, formatDate} from '@/store/trips'
 import { VehiclesState } from '@/store/vehicles';
 import EditingCell from '@/dialogs/teams/EditingCell.vue';
 import PersonView from '@/dialogs/teams/PersonView.vue';
@@ -88,13 +88,17 @@ import { db } from '@/lib/firebase';
 export default Vue.extend({
   data () {
     return {
-      selectedDate: null as null | string,
+      selectedDate: formatDate(new Date(Date.now() - 86400e3)) as null | string,
       preview: null as Team[] | null,
     }
   },
 
   components: {
     StandardDialog,
+  },
+
+  mounted () {
+    this.updatePreview()
   },
 
   methods: {

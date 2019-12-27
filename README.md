@@ -28,5 +28,6 @@ TODO:
   - [ ] show the next day's trips up to around... 3am?
   - [ ] save a trip to the following day, if it is past midnight
 14. [ ] Allow driver/medics to have starting/ending times/locations?
-  - [ ] SMS support
-22. [ ] Multi-user collaboration
+  - [X] SMS support
+22. [X] Multi-user collaboration
+23. [ ] Fix the tabbing mechanism. Maybe simplify it?

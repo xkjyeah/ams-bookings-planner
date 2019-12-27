@@ -40,19 +40,19 @@
         </template>
         <v-list>
           <v-list-tile @click="showDialog('teams')">
-            Manage teams
+            Teams
           </v-list-tile>
           <v-list-tile @click="showDialog('persons')">
-            Manage people
+            Individuals
           </v-list-tile>
-          <v-list-tile @click="showDialog('importTeams')">
+          <!-- <v-list-tile @click="showDialog('importTeams')">
             Import teams
-          </v-list-tile>
+          </v-list-tile> -->
           <v-list-tile @click="showDialog('templates')">
-            Manage job templates
+            Job templates
           </v-list-tile>
           <v-list-tile @click="showDialog('messages')">
-            Message Log
+            SMS History
           </v-list-tile>
         </v-list>
       </v-menu>

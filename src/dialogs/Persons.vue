@@ -3,6 +3,12 @@
     title="Manage people"
     >
     <!-- fixme: choose a better key -->
+    <div class="persons-grid">
+      <div class="action"></div>
+      <div class="cell"><strong>Name</strong></div>
+      <div class="cell"><strong>Telephone number</strong></div>
+      <div class="cell"><strong>Last updated</strong></div>
+    </div>
     <div v-for="(person, i) in personList"
       :key="i"
       :data-key="person.name"
@@ -35,7 +41,6 @@
           </template>
         </EditingCell>
         <EditingCell class="cell" :disabled="true">
-          {{person.created && sAgo(person.created, 'DD MMM YYYY, hh:mm:ss')}}
           {{person.updated && sAgo(person.updated, 'DD MMM YYYY, hh:mm:ss')}}
         </EditingCell>
       </div>

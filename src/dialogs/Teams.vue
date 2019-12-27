@@ -4,6 +4,10 @@
     name="teams"
     height="80vh"
   >
+    <v-btn @click="$store.commit('dialogs/showDialog', 'importTeams')">
+      Import from a previous day
+    </v-btn>
+
     <!-- fixme: choose a better key -->
     <div v-for="(team, i) in teams"
       :key="`${team.driver},${team.medic}`"
