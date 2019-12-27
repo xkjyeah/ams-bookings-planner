@@ -61,11 +61,29 @@ export type AppMode = {
   lastTimestamp: number,
 }
 
+export type AutoUpdateTrips = {
+  teams: Team[],
+  teamsKey: string,
+} | {
+  trips: Trip[],
+  tripsKey: string,
+}
+
 export interface TripsState {
   scheduleByTeam: ScheduleByTeam,
   teams: Team[],
+  // Only to be used when switching between dates, for example.
+  // because when switching between dates, there as in ambiguity
+  // while requests are in flight as to which is the *current* day
   savesDisabled: Boolean,
   inFlightPromise: Promise<any> | null,
+
+  autoUpdate: {
+    teams: Team[],
+    teamsKey: string,
+    trips: Trip[],
+    tripsKey: string,
+  },
 
   mode: AppMode,
 }
@@ -83,6 +101,12 @@ export default {
         timestamp: Date.now(),
       },
       inFlightPromise: null,
+      autoUpdate: {
+        teams: [],
+        trips: [],
+        teamsKey: 'a',
+        tripsKey: 'b',
+      }
     }
   },
 
@@ -363,6 +387,18 @@ export default {
     _setSchedules(state: TripsState, schedule: ScheduleByTeam) {
       state.scheduleByTeam = schedule
       state.inFlightPromise = null
+    },
+
+    _autoUpdateTrips(state: TripsState, options: AutoUpdateTrips) {
+      if ('teams' in options) {
+        state.autoUpdate.teams = options.teams
+        state.autoUpdate.teamsKey = options.teamsKey
+      } else if ('trips' in options) {
+        state.autoUpdate.trips = options.trips
+        state.autoUpdate.tripsKey = options.tripsKey
+      } else {
+        throw new Error('unexpected value for options')
+      }
     }
   },
 
@@ -389,22 +425,46 @@ export default {
       ])
       .then(([initialTeams, trips]) => {
         if (promise == state.inFlightPromise) {
-          const [teams, schedules] = generateSchedule(initialTeams, trips)
-          context.commit('updateTeams', teams)
-          // context.commit('') // No trips to commit?
-          context.commit('_setSchedules', schedules)
-          context.commit('_setMode', mode)
-          context.commit('_enableSaves')
+          context.dispatch('_setTripsAndTeams', {teams: initialTeams, trips, mode})
           pushModeToHistory(mode)
         }
       })
 
       context.commit('_disableSaves', promise)
+    },
+
+    // Updates the current trips and team, if both
+    // are synced to the current mode
+    autoUpdateTrips(context: any, options: AutoUpdateTrips) {
+      context.commit('_autoUpdateTrips', options)
+
+      const tripsRelPath = context.state.autoUpdate.tripsKey.replace(/^\/trips\//, '')
+      const teamsRelPath = context.state.autoUpdate.teamsKey.replace(/^\/trips\//, '')
+
+      if (
+        tripsRelPath === teamsRelPath &&
+        getRelPath(context.state.mode) === tripsRelPath
+      ) {
+        context.dispatch('_setTripsAndTeams', {
+          trips: context.state.autoUpdate.trips,
+          teams: context.state.autoUpdate.teams,
+          mode: context.state.mode,
+        })
+      }
+    },
+
+    _setTripsAndTeams(context: any, options: {teams: Team[], trips: Trip[], mode: AppMode}) {
+      const [teams, schedules] = generateSchedule(options.teams, options.trips)
+      context.commit('updateTeams', teams)
+      // context.commit('') // No trips to commit?
+      context.commit('_setSchedules', schedules)
+      context.commit('_setMode', options.mode)
+      context.commit('_enableSaves')
     }
   }
 }
 
-function getRelPath(mode: AppMode): string {
+export function getRelPath(mode: AppMode): string {
   if (mode.type === 'date') {
     return formatDate(new Date(mode.timestamp))
   } else {
@@ -451,15 +511,17 @@ export function deserializeArray(o: {[key: string]: any}): any[] {
 export function readTeams(mode: AppMode): Promise<Team[]> {
   return db.ref(`/teams/${getRelPath(mode)}`)
   .once('value')
-  .then((values: Firebase.database.DataSnapshot) => {
-    const v = values.val() || {}
-    return deserializeArray(v)
-      .map(teamRaw => ({
-        driver: teamRaw.driver || null,
-        medic: teamRaw.medic || null,
-        vehicle: teamRaw.vehicle || null,
-      }))
-  })
+  .then((values: Firebase.database.DataSnapshot) => parseTeamsData(values))
+}
+
+export function parseTeamsData(v: firebase.database.DataSnapshot) {
+  const values = v.val() || {}
+  return deserializeArray(values)
+    .map(teamRaw => ({
+      driver: teamRaw.driver || null,
+      medic: teamRaw.medic || null,
+      vehicle: teamRaw.vehicle || null,
+    }))
 }
 
 function generateSchedule(
@@ -575,38 +637,40 @@ function parseLatLng(o: any): LatLng | null {
 export function readTrips(mode: AppMode): Promise<Trip[]> {
   return db.ref(`/trips/${getRelPath(mode)}`)
   .once('value')
-  .then(v => {
-    const value = v.val() || {}
-    return _.values(value)
-      .map(tripRaw => ({
-        driver: tripRaw.driver || null,
-        medic: tripRaw.medic || null,
-        startTime: isFinite(tripRaw.startTime)
-          ? Math.max(0, Math.min(27 * 3600e3, parseInt(tripRaw.startTime)))
-          : 12 * 3600e3,
-        endTime: isFinite(tripRaw.endTime)
-          ? parseInt(tripRaw.endTime)
-          : null,
-        id: tripRaw.id || uniqueId(),
-        description: tripRaw.description || '<No description>',
-        startPostcode: tripRaw.startPostcode || null,
-        endPostcode: tripRaw.endPostcode || null,
-        startAddress: tripRaw.startAddress || null,
-        endAddress: tripRaw.endAddress || null,
-        startLocation: tripRaw.startLocation || null,
-        endLocation: tripRaw.endLocation || null,
-        startLatLng: parseLatLng(tripRaw.startLatLng),
-        endLatLng: parseLatLng(tripRaw.endLatLng),
-        isTentative: !!tripRaw.isTentative,
-        relatedTrip: tripRaw.relatedTrip || null,
-        isReturnTrip: !!tripRaw.isReturnTrip,
-        type: tripRaw.type || '<No type>',
-        price: isFinite(tripRaw.price)
-          ? parseInt(tripRaw.price)
-          : null,
-        cancelled: tripRaw.cancelled || false,
-        created: tripRaw.created || Date.now(),
-        templateTrip: tripRaw.templateTrip || null,
-      }))
-  })
+  .then(v => parseTripsData(v))
+}
+
+export function parseTripsData(v: firebase.database.DataSnapshot): Trip[] {
+  const value = v.val() || {}
+  return _.values(value)
+    .map(tripRaw => ({
+      driver: tripRaw.driver || null,
+      medic: tripRaw.medic || null,
+      startTime: isFinite(tripRaw.startTime)
+        ? Math.max(0, Math.min(27 * 3600e3, parseInt(tripRaw.startTime)))
+        : 12 * 3600e3,
+      endTime: isFinite(tripRaw.endTime)
+        ? parseInt(tripRaw.endTime)
+        : null,
+      id: tripRaw.id || uniqueId(),
+      description: tripRaw.description || '<No description>',
+      startPostcode: tripRaw.startPostcode || null,
+      endPostcode: tripRaw.endPostcode || null,
+      startAddress: tripRaw.startAddress || null,
+      endAddress: tripRaw.endAddress || null,
+      startLocation: tripRaw.startLocation || null,
+      endLocation: tripRaw.endLocation || null,
+      startLatLng: parseLatLng(tripRaw.startLatLng),
+      endLatLng: parseLatLng(tripRaw.endLatLng),
+      isTentative: !!tripRaw.isTentative,
+      relatedTrip: tripRaw.relatedTrip || null,
+      isReturnTrip: !!tripRaw.isReturnTrip,
+      type: tripRaw.type || '<No type>',
+      price: isFinite(tripRaw.price)
+        ? parseInt(tripRaw.price)
+        : null,
+      cancelled: tripRaw.cancelled || false,
+      created: tripRaw.created || Date.now(),
+      templateTrip: tripRaw.templateTrip || null,
+    }))
 }

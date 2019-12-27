@@ -22,7 +22,6 @@ export default {
 
   mutations: {
     updateTime (state: TimeStoreState) {
-      console.log('updating time')
       state.time = Date.now()
     }
   }

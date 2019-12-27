@@ -6,7 +6,7 @@
   >
     <v-layout column>
       <v-flex>
-        <v-menu v-model="isOpen" offset-y>
+        <v-menu offset-y>
           <template v-slot:activator="{ on }">
             <v-text-field
               :value="maxTime && dateformat(maxTime, 'dd mmm yyyy')"

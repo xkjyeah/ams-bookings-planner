@@ -76,6 +76,7 @@
     </v-btn>
     <TimeUpdater />
     <VehiclesSync />
+    <TripsSync />
 
     <TeamsDialog v-if="$store.state.dialogs.activeDialog === 'teams'" />
     <PersonsDialog v-else-if="$store.state.dialogs.activeDialog === 'persons'" />
@@ -151,6 +152,7 @@ import DraftMessageDialog from '@/dialogs/DraftMessage.vue';
 import TemplatesDialog from '@/dialogs/Templates.vue';
 import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
+import TripsSync from '@/sync/TripsSync.vue';
 import store from '@/store';
 import defaultData from '@/assets/default-data';
 
@@ -204,6 +206,7 @@ export default Vue.extend({
     TeamsDialog,
     TemplatesDialog,
     TripEditor,
+    TripsSync,
     VehiclesSync,
   },
   created () {
