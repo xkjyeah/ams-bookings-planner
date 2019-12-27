@@ -1,6 +1,7 @@
 
 export interface DialogsState {
-  activeDialog: string | null
+  activeDialog: string | null,
+  props: {[key: string]: any},
 }
 
 export default {
@@ -8,11 +9,17 @@ export default {
 
   state (): DialogsState {
     return {
-      activeDialog: 'messages',
+      activeDialog: null,
+      props: {},
     }
   },
 
   mutations: {
+    showDialogWithProps(state: DialogsState, {dialog, props}: {dialog: string, props: {[key: string]: any}}) {
+      state.activeDialog = dialog
+      state.props = props
+    },
+
     showDialog(state: DialogsState, team: string) {
       state.activeDialog = team
     },

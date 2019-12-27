@@ -76,12 +76,15 @@
     </v-btn>
     <TimeUpdater />
     <VehiclesSync />
-    <TeamsDialog />
-    <PersonsDialog />
-    <ManifestDialog />
-    <MessagesDialog />
-    <ImportTeamsDialog />
-    <TemplatesDialog />
+
+    <TeamsDialog v-if="$store.state.dialogs.activeDialog === 'teams'" />
+    <PersonsDialog v-else-if="$store.state.dialogs.activeDialog === 'persons'" />
+    <ManifestDialog v-else-if="$store.state.dialogs.activeDialog === 'manifest'" />
+    <MessagesDialog v-else-if="$store.state.dialogs.activeDialog === 'messages'" />
+    <DraftMessageDialog v-else-if="$store.state.dialogs.activeDialog === 'draftMessage'"
+      v-bind="$store.state.dialogs.props"/>
+    <ImportTeamsDialog v-else-if="$store.state.dialogs.activeDialog === 'importTeams'" />
+    <TemplatesDialog v-else-if="$store.state.dialogs.activeDialog === 'templates'" />
   </v-app>
 </template>
 
@@ -116,7 +119,7 @@
     width: 33vw;
     background: white;
     box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.5);
-    z-index: 999;
+    z-index: 9;
     box-sizing: border-box;
   }
 }
@@ -144,6 +147,7 @@ import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
 import ManifestDialog from '@/dialogs/Manifest.vue';
 import MessagesDialog from '@/dialogs/Messages.vue';
+import DraftMessageDialog from '@/dialogs/DraftMessage.vue';
 import TemplatesDialog from '@/dialogs/Templates.vue';
 import ImportTeamsDialog from '@/dialogs/ImportTeams.vue';
 import VehiclesSync from '@/sync/VehiclesSync.vue';
@@ -190,6 +194,7 @@ export default Vue.extend({
   components: {
     ChartArea,
     DatePicker,
+    DraftMessageDialog,
     ImportTeamsDialog,
     ManifestDialog,
     MessagesDialog,

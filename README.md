@@ -12,18 +12,21 @@ TODO:
 9. [X] Split by origin / destination
 7. [ ] Import a bunch of regular / historical trips (for dialysis)
 10. [X] Disable all controls in editor if trip is cancelled
-11. [ ] Migrate a trip to a different date if date changed
-  - [ ] show the next day's trips up to around... 3am?
-  - [ ] save a trip to the following day, if it is past midnight
 
 12. [X] Add additional information about driver / medic (e.g. phone number)
-  - [ ] SMS support
 13. [X] Allow team pairings to be imported from another day?
-15. [ ] import trips from a datastore, e.g. dialysis
-
-14. [ ] Allow driver/medics to have starting/ending times/locations?
 
 16. [X] Create new trip. Bundle all unassigned trips to a different row
 17. [X] Show current position of ambulances
 18. [X] Adjust height of chart for multiple rows
 19. [X] Hide gridlines for multiple rows
+15. [X] import trips from a datastore, e.g. dialysis
+
+20. [ ] Implement vertical scrolling in scroll helper
+21. [X] Highlight the unassigned trips
+11. [ ] Migrate a trip to a different date if date changed
+  - [ ] show the next day's trips up to around... 3am?
+  - [ ] save a trip to the following day, if it is past midnight
+14. [ ] Allow driver/medics to have starting/ending times/locations?
+  - [ ] SMS support
+22. [ ] Multi-user collaboration

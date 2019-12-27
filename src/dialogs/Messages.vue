@@ -15,7 +15,7 @@
               readonly
               @click:clear="handleDateInput(null)"
               v-on="on"
-              style="width: 150px"
+              style="width: 250px"
             />
           </template>
           <v-date-picker
@@ -39,7 +39,7 @@
             <tr v-for="(row, index) in currentPage.data" :key="row.id">
               <td>{{index + 1}}</td>
               <td>{{row.recipients.join(', ')}}</td>
-              <td>{{dateformat(row.created, 'dd mmm yyyy, HH:MM:ss')}}</td>
+              <td>{{row.created && dateformat(row.created, 'dd mmm yyyy, HH:MM:ss')}}</td>
               <td>
                 {{row.message}}
                 <MessageStatusChecker :status="row.status" :id="row.id"
@@ -50,9 +50,9 @@
           <tfoot>
             <tr>
               <td colspan="4">
-                <a href="#" @click.prevent="loadMore">Load more</a> |
-                <a href="#" @click.prevent="createDummyMessages">Create dummy messages</a> |
-                <a href="#" @click.prevent="clearDummyMessages">Clear dummy messages</a>
+                <a href="#" @click.prevent="loadMore">Load more</a>
+                <!-- <a href="#" @click.prevent="createDummyMessages">Create dummy messages</a> |
+                <a href="#" @click.prevent="clearDummyMessages">Clear dummy messages</a> -->
               </td>
             </tr>
           </tfoot>
@@ -62,33 +62,6 @@
   </StandardDialog>
 </template>
 <style lang="scss">
-// .page-number {
-//   list-style-type: none;
-//   display: block;
-//   margin: 0;
-//   padding: 0;
-
-//   li {
-//     display: inline-block;
-
-//     &.page-button {
-//       width: 1.5em;
-//       background-color: #DDD;
-//       text-align: center;
-//       cursor: pointer;
-//       border: solid 1px black;
-
-//       &:hover {
-//         background-color: #EEE;
-//       }
-//     }
-
-//     .page-input {
-//       width: 4em;
-//       text-align: center;
-//     }
-//   }
-// }
 table.messages-table {
   border-collapse: collapse;
   border: solid 1px black;
@@ -126,14 +99,7 @@ import _ from 'lodash';
 
 import {db} from '@/lib/firebase'
 import uniqueId from '@/lib/uniqueId'
-
-type Message = {
-  recipients: string[],
-  message: string,
-  created: number,
-  status: string,
-  id: string,
-}
+import {Message, MessageClient} from '@/lib/messages'
 
 const dummyMessages = (): Message[] => {
   const s = '0123456789'
@@ -192,9 +158,11 @@ export default Vue.extend({
 
   created () {
     this.loadData()
+    this.$messageClient = new MessageClient(db)
   },
 
   methods: {
+    // TODO move to MessageClient
     loadData(lastId: number | null = null) {
       if (this.$inflightPromise) return
 
@@ -210,7 +178,7 @@ export default Vue.extend({
         : ref
 
       const promise = this.$inflightPromise = filteredRef
-        .limitToLast(30)
+        .limitToLast(20)
         .once('value')
         .then((v) => {
           if (this.$inflightPromise !== promise) return
@@ -222,7 +190,7 @@ export default Vue.extend({
               recipients: (av.recipients || '').split(/,/g).filter(Boolean),
               message: av.message || '',
               status: av.status || '',
-              created: parseFloat(av.created) || Date.now(),
+              created: av.created || null,
             })
           }
 
@@ -240,28 +208,6 @@ export default Vue.extend({
         const messages = this.currentPage.data
         this.loadData(messages[messages.length - 1].created)
       }
-    },
-
-    createDummyMessages () {
-      db.ref('/sms')
-      .update(
-        dummyMessages()
-        .reduce((acc, o: Message) => {
-          acc[o.id] = {
-            id: o.id,
-            recipients: o.recipients.join(','),
-            message: o.message,
-            created: o.created,
-            status: o.status,
-          }
-          return acc
-        }, {} as {[id: string]: any})
-      )
-    },
-
-    clearDummyMessages () {
-      db.ref('/sms')
-      .set(null)
     },
 
     handleDateInput(i: string | null) {

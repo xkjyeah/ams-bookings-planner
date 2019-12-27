@@ -2,6 +2,13 @@
   <div v-if="tripBeingEdited" :key="tripBeingEdited.id" class="trip-editor">
     <v-card-actions>
       <v-layout align-content-end>
+        <v-btn
+          color="neutral"
+          icon
+          @click="wantToSendMessage"
+          >
+          <v-icon>message</v-icon>
+        </v-btn>
         <v-spacer />
         <v-btn
           color="neutral"
@@ -112,7 +119,11 @@
           </a>
         </div>
       </v-layout>
-      <PostcodePicker />
+      <hr/>
+      <!-- <SMSSection
+        :trip="tripBeingEdited"
+        /> -->
+      <hr/>
       <v-layout>
         <v-spacer />
         <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
@@ -169,14 +180,17 @@
 import Vue from 'vue'
 import { Trip, Team } from '@/lib/types';
 import {TripEditingState} from '@/store/tripEditing'
+import {Person} from '@/store/vehicles'
 import TimeEditor from '@/components/common/TimeEditor.vue'
 import TeamsSelect from '@/components/TeamsSelect.vue'
+import SMSSection from '@/components/SMSSection.vue'
 import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
 import {tripKey, TripsState, ProcessedScheduleData} from '@/store/trips'
 import uniqueId from '@/lib/uniqueId';
+import dateformat from 'dateformat'
 
 export default Vue.extend({
   components: {
@@ -198,15 +212,68 @@ export default Vue.extend({
     deleteAllowed (): Boolean {
       const now = this.$store.state.time.time
       return (now - this.tripBeingEdited.created) < 15 * 60e3
-    }
+    },
+
+    message (): string {
+      const trip = this.tripBeingEdited
+      const condenseAddress = (s: string) =>
+        s.replace(/\bSINGAPORE ([0-9]{6})\b/g, (s, p) => `S(${p})`)
+      const condense = (s: string) => s.trim()
+        .replace(/\s+/g, ' ')
+      const removeIndent = (s: string) => s.replace(
+        /\s+\n\s+/g, '\n'
+      )
+
+      const tripPart = trip.description || ''
+      const cancelledPart = trip.cancelled ? '(cancelled)' : ''
+      const startAddressPart = condenseAddress(`
+        ${trip.startAddress || ''} ${trip.startLocation || ''}
+      `)
+      const endAddressPart = condenseAddress(`
+        ${trip.endAddress || ''} ${trip.endLocation || ''}
+      `)
+      const datePart = dateformat(trip.startTime, 'HH:MM', true)
+
+      return removeIndent(`
+      ${condense(tripPart)} ${cancelledPart}
+      ${startAddressPart} - ${endAddressPart}
+      @${datePart}
+      `).trim()
+    },
+
+    messageLabel (): string {
+      return `Message (${this.message.length} chars)`
+    },
+
+    tripRecipientPhoneNumbers (): [Person | null, Person | null] {
+      const driver = this.tripBeingEdited.driver
+      const medic = this.tripBeingEdited.medic
+
+      const driverPerson = this.$store.getters['vehicles/personArray']
+        .find((s: Person) => s.name === driver)
+      const medicPerson = this.$store.getters['vehicles/personArray']
+        .find((s: Person) => s.name === medic)
+
+      return [driverPerson, medicPerson]
+    },
+
+    tripRecipientPhoneNumberRender (): string {
+      const [p1, p2] = this.tripRecipientPhoneNumbers
+      const renderTelOrSubstitute = (p: Person | null) =>
+        (p && p.telephone) || '(no number)'
+
+      return this.tripRecipientPhoneNumbers
+        .map((p: Person | null) => `${p ? p.name : ''} ${renderTelOrSubstitute(p)}`)
+        .join(', ')
+    },
   },
 
   methods: {
-    updateTrip (field: string, value: any) {
+    updateTrip (field: string, value: any): void {
       this.$store.dispatch('tripEditing/updateTripBeingEdited', {[field]: value})
     },
 
-    reassignTripToTeam (key: string) {
+    reassignTripToTeam (key: string): void {
       const team = this.$store.state.trips.teams.find((t: Team) =>
         tripKey(t) === key)
 
@@ -224,23 +291,7 @@ export default Vue.extend({
       // TODO: scroll to the trip
     },
 
-    combineDateTimeOffset(...args: any[]) {
-      const [dateRef, timeRef, timeOffset] =
-        (args.length === 2) ? [args[0], null, args[1]]
-        : (args.length === 3) ? args
-        : [-1, -1, -1]
-
-      if (dateRef < 0) throw new Error('Bad args')
-
-      const date = new Date(dateRef)
-      let time = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-      )
-    },
-
-    createReturnTrip(offset: number) {
+    createReturnTrip(offset: number): void {
       const relatedTripId = uniqueId()
       const trip: Trip = {
         ...this.tripBeingEdited,
@@ -273,7 +324,7 @@ export default Vue.extend({
 
     // Searches through all existing trips and find the
     // one with the same id
-    visitRelatedTrip() {
+    visitRelatedTrip(): void {
       const result = (this.$store.getters['trips/teamSchedules'] as [Team, ProcessedScheduleData][])
         .map(([team, schedule]): [Team, number] => [team, schedule.trips.findIndex(t => t.id === this.tripBeingEdited.relatedTrip)])
         .find(([team, index]) => index !== -1)
@@ -284,6 +335,18 @@ export default Vue.extend({
       } else {
         this.updateTrip('relatedTrip', null)
       }
+    },
+
+    wantToSendMessage(): void {
+      this.$store.commit('dialogs/showDialogWithProps', {
+        dialog: 'draftMessage',
+        props: {
+          recipients: this.tripRecipientPhoneNumbers
+            .filter(r => r)
+            .map(r => r && r.telephone),
+          message: this.message,
+        }
+      })
     }
   }
 })
