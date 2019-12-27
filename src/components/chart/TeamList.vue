@@ -19,6 +19,7 @@
       draggable
       @drop="onDrop($event, 1)"
       @dragstart="onDragStart($event, i)"
+      @dragend="onDragEnd()"
       @dragover="onDragOver($event, i)"
       >
       <template v-if="team.driver || team.medic">
@@ -107,14 +108,7 @@ export default Vue.extend({
       ;(this as any as TeamListData).dragIndex = index
       ;(this as any as TeamListData).isDragging = true
     },
-    onDragEnd (e: DragEvent, index: number): void {
-      if ((this as any as TeamListData).destinationIndex < 0) return
-
-      this.$store.commit('trips/reorderTeam', {
-        oldIndex: (this as any as TeamListData).dragIndex,
-        newIndex: (this as any as TeamListData).destinationIndex
-      })
-
+    onDragEnd (): void {
       ;(this as any as TeamListData).isDragging = false
       ;(this as any as TeamListData).dragIndex = -1
     },

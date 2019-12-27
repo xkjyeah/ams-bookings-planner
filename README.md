@@ -31,4 +31,5 @@ TODO:
   - [X] SMS support
 22. [X] Multi-user collaboration
 23. [~] Fix the tabbing mechanism. Maybe simplify it?
-24. [ ] Login mechanism
+24. [X] Login mechanism
+25. [ ] SMS history
