@@ -186,7 +186,7 @@ export default Vue.extend({
       })
 
       if (wantToEdit) {
-        this.$store.dispatch('tripEditing/editTrip', {
+        this.$store.commit('tripEditing/editTrip', {
           tripId: tripToMove.id
         })
       }
