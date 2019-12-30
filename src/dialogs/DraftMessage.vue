@@ -91,6 +91,7 @@ export default Vue.extend({
       ((this as any).$messageClient as MessageClient).createMessage({
         recipients: this.m.recipients,
         message: this.m.message.trim(),
+        trip: this.trip,
       })
       store.commit('dialogs/hideDialog')
     }

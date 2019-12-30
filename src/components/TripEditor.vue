@@ -9,6 +9,13 @@
           >
           <v-icon>message</v-icon>
         </v-btn>
+        <v-btn
+          :color="historyShown ? 'primary' : 'neutral'"
+          icon
+          @click="historyShown = !historyShown"
+          >
+          <v-icon>history</v-icon>
+        </v-btn>
         <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
           <template v-slot:activator="{on}">
             <v-btn v-on="on" icon>
@@ -41,8 +48,9 @@
       </v-layout>
     </v-card-actions>
     <v-card-text>
+      <MessageHistory v-if="historyShown" :tripId="tripBeingEdited.id" />
       <a href="#" @click.prevent="visitRelatedTrip"
-          v-if="tripBeingEdited.relatedTrip">
+          v-if="tripBeingEdited.relatedTrip && $store.state.trips.trips[tripBeingEdited.relatedTrip]">
         {{tripBeingEdited.isReturnTrip
           ? 'First trip'
           : 'Return trip'}}
@@ -176,6 +184,7 @@ import TeamsSelect from '@/components/TeamsSelect.vue'
 import SMSSection from '@/components/SMSSection.vue'
 import PostcodePicker from '@/components/common/PostcodePicker.vue'
 import DateEditor from '@/components/common/DateEditor.vue'
+import MessageHistory from '@/components/MessageHistory.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
 import {tripKey, TripsState, ProcessedScheduleData} from '@/store/trips'
@@ -188,6 +197,13 @@ export default Vue.extend({
     DateEditor,
     PostcodePicker,
     TeamsSelect,
+    MessageHistory,
+  },
+
+  data() {
+    return {
+      historyShown: false,
+    }
   },
 
   computed: {

@@ -51,8 +51,6 @@
             <tr>
               <td colspan="4">
                 <a href="#" @click.prevent="loadMore">Load more</a>
-                <!-- <a href="#" @click.prevent="createDummyMessages">Create dummy messages</a> |
-                <a href="#" @click.prevent="clearDummyMessages">Clear dummy messages</a> -->
               </td>
             </tr>
           </tfoot>
@@ -99,30 +97,7 @@ import _ from 'lodash';
 
 import {db} from '@/lib/firebase'
 import uniqueId from '@/lib/uniqueId'
-import {Message, MessageClient} from '@/lib/messages'
-
-const dummyMessages = (): Message[] => {
-  const s = '0123456789'
-  const randomString = () => _.range(0, 8)
-    .map(() =>
-      s[Math.floor(Math.random() * 10)]
-    )
-    .join('')
-  return _.range(0, 10)
-    .map((s: number): Message => {
-      const time = Date.now() - Math.random() * (365 * 86400e3)
-      return {
-        id: uniqueId(),
-        created: time,
-        message: `Lorem ipsum dolor si ${time}`,
-        recipients: [
-          randomString(),
-          randomString()
-        ],
-        status: 'unsent',
-      }
-    })
-}
+import {Message, MessageClient, parseMessages} from '@/lib/messages'
 
 export default Vue.extend({
   data () {
@@ -183,16 +158,11 @@ export default Vue.extend({
         .then((v) => {
           if ((this as any).$inflightPromise !== promise) return
 
-          for (let [key, value] of _.orderBy(Object.entries(v.val()), (f: any) => f[1].created, 'desc')) {
-            const av = value as any
-            this.currentPage.data.push({
-              id: av.id || key,
-              recipients: (av.recipients || '').split(/,/g).filter(Boolean),
-              message: av.message || '',
-              status: av.status || '',
-              created: av.created || null,
-            })
-          }
+          const messages = parseMessages(v)
+
+          messages.forEach((m: Message) => {
+            this.currentPage.data.push(m)
+          })
 
           ;(this as any).$inflightPromise = null
         }, (e) => {
