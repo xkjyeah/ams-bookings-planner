@@ -223,7 +223,13 @@ export default Vue.extend({
     message (): string {
       const trip = this.tripBeingEdited
       const condenseAddress = (s: string) =>
-        s.replace(/\bSINGAPORE ([0-9]{6})\b/g, (s, p) => `S(${p})`)
+        s.replace(/\bSINGAPORE ([0-9]{6})\b/ig, (s, p) => `S(${p})`)
+          .replace(/\bstreet\b/ig, 'St')
+          .replace(/\broad\b/ig, 'Rd')
+          .replace(/\bbukit\b/ig, 'Bt')
+          .replace(/\btanjong\b/ig, 'Tg')
+          .replace(/\bjalan\b/ig, 'Jln')
+          .replace(/\blorong\b/ig, 'Lor')
       const condense = (s: string) => s.trim()
         .replace(/\s+/g, ' ')
       const removeIndent = (s: string) => s.replace(

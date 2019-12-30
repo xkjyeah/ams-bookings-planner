@@ -23,7 +23,9 @@ export interface AddressSearchResult {
 const oneMapResultsToAddressSearchResult = (result: any) => {
   if (result.results && result.results.length > 0) {
     return {
-      address: (result.results[0].ADDRESS as string),
+      address: (result.results[0].ADDRESS as string)
+        .toLowerCase()
+        .replace(/(?:\b|^)[a-z]/g, s => s.toUpperCase()),
       latLng: {
         lat: parseFloat(result.results[0].LATITUDE),
         lng: parseFloat(result.results[0].LONGITUDE),
