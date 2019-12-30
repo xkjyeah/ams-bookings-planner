@@ -4,6 +4,9 @@
       Loading...
     </template>
     <template v-else>
+      <template v-if="messages.length === 0">
+        No messages in history
+      </template>
       <div v-for="message in messages" class="message">
         <b>{{formatDate(message.created)}}; {{message.recipients.join(', ')}}&gt;</b>
         {{message.message}}
@@ -59,7 +62,7 @@ export default Vue.extend({
   },
 
   methods: {
-    formatDate(c) {
+    formatDate(c: string | number) {
       return dateformat(c, 'dd-mmm-yy HH:MM')
     },
     loadByTripId(tripId: string) {
