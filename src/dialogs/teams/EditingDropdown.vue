@@ -219,16 +219,13 @@ export default Vue.extend({
     // clear the blur timeout
     handleFocus(e?: FocusEvent): void {
       if (this.blurTimeout !== null) {
-        console.log('clearing timeout')
         clearTimeout(this.blurTimeout)
         this.blurTimeout = null
       } else {
-        console.log('nothing to clear!')
       }
     },
 
     handleShowMenu(): void {
-      console.log('handleShowMenu')
       this.showMenu = true
       this.focusBack()
 
@@ -268,7 +265,7 @@ export default Vue.extend({
     },
 
     notify(message: string) {
-      console.log(message)
+      // console.log(message)
     }
   }
 })
@@ -276,13 +273,10 @@ export default Vue.extend({
 function isDescendentOf(e: HTMLElement, f: HTMLElement): boolean {
   let current: HTMLElement | null = e
 
-  console.log('isDescendentOf BEGIN', f)
   while (current) {
-    console.log(current)
     if (current === f) return true
     current = current.parentElement
   }
-  console.log('isDescendentOf END')
   return false
 }
 </script>
