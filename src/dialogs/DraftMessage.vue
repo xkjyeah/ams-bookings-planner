@@ -54,7 +54,7 @@ interface Recipient {
 }
 
 export default Vue.extend({
-  props: ['recipients', 'message'],
+  props: ['recipients', 'message', 'trip'],
 
   data () {
     return {

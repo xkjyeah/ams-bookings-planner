@@ -273,10 +273,7 @@ export default Vue.extend({
         team
       })
       this.$store.commit('tripEditing/editTrip', {
-        team,
-        index: (this.$store.state.trips as TripsState)
-          .scheduleByTeam[tripKey(team)]
-          .trips.length - 1
+        tripId: this.tripBeingEdited.id
       })
 
       // TODO: scroll to the trip
@@ -316,13 +313,12 @@ export default Vue.extend({
     // Searches through all existing trips and find the
     // one with the same id
     visitRelatedTrip(): void {
-      const result = (this.$store.getters['trips/teamSchedules'] as [Team, ProcessedScheduleData][])
-        .map(([team, schedule]): [Team, number] => [team, schedule.trips.findIndex(t => t.id === this.tripBeingEdited.relatedTrip)])
-        .find(([team, index]) => index !== -1)
+      const relatedTripId = this.tripBeingEdited.relatedTrip
+      const relatedTrip = relatedTripId &&
+        (this.$store.state.trips as TripsState).trips[relatedTripId]
 
-      if (result) {
-        const [team, index] = result
-        this.$store.commit('tripEditing/editTrip', {team, index})
+      if (relatedTrip) {
+        this.$store.commit('tripEditing/editTrip', {tripId: relatedTripId})
       } else {
         this.updateTrip('relatedTrip', null)
       }
@@ -336,6 +332,7 @@ export default Vue.extend({
             .filter(r => r)
             .map(r => r && r.telephone),
           message: this.message,
+          trip: this.tripBeingEdited.id,
         }
       })
     }

@@ -82,6 +82,7 @@ import Vue from 'vue'
 import { KeyableTrip } from '@/lib/types';
 import store from '@/store';
 import * as tripReassignment from './tripReassignment'
+import { TripsState } from '../../store/trips';
 
 export default Vue.extend({
   data () {
@@ -171,11 +172,11 @@ export default Vue.extend({
       }
       const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
-      const {key, tripIndex} = data
+      const {tripId} = data
 
       const row = Math.floor(y / this.yAxisScale)
 
-      const tripToMove = this.$store.state.trips.scheduleByTeam[key].trips[tripIndex]
+      const tripToMove = (this.$store.state.trips as TripsState).trips[tripId]
       const destinationTeam = this.$store.getters['trips/teamForRow'](row)
       const wantToEdit = this.$store.getters['tripEditing/tripBeingEdited'] === tripToMove
 
@@ -185,8 +186,8 @@ export default Vue.extend({
       })
 
       if (wantToEdit) {
-        this.$store.dispatch('tripEditing/editLatestTripOfTeam', {
-          team: destinationTeam
+        this.$store.dispatch('tripEditing/editTrip', {
+          tripId: tripToMove.id
         })
       }
 

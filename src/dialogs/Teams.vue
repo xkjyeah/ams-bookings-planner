@@ -239,8 +239,9 @@ export default Vue.extend({
     },
 
     teamHasTrips(team: KeyableTrip):boolean {
-      return this.scheduleByTeam[tripKey(team)] &&
-        this.scheduleByTeam[tripKey(team)].trips.length > 0
+      return _.sum(
+        this.scheduleByTeam[tripKey(team)].rows.map(tripsInRow => tripsInRow.length)
+      ) > 0
     },
 
     // Argh hacky way of handling this. Dammit. How to prevent

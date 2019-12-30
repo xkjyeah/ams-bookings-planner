@@ -48,18 +48,18 @@
         />
     </template>
 
-    <template slot-scope="s">
+    <template>
+      <!-- {{teamSchedules}} -->
       <template v-for="([team, data], i) in teamSchedules">
         <TripBar v-for="(trip, j) in data.trips"
-          :isSelected="tripKey(team) === tripKey($store.state.tripEditing.teamBeingEdited) &&
-            data.tripIndices[j] === $store.state.tripEditing.tripIndexBeingEdited"
+          :isSelected="trip.id === $store.state.tripEditing.tripBeingEdited"
           :key="trip.id"
           :trip="trip"
           :yIndexFunction="t => i"
-          @click="tripClicked(trip, data.tripIndices[j])"
+          @click="tripClicked(trip)"
 
           v-draggable
-          @dragstart.native="onDragStart($event, trip, data.tripIndices[j])"
+          @dragstart.native="onDragStart($event, trip)"
           @dragend.native="onDragEnd()"
           />
       </template>
@@ -178,15 +178,14 @@ export default Vue.extend({
     },
 
     tripClicked (trip: Trip, index: number) {
-      this.$emit('trip-clicked', {team: trip, index})
+      this.$emit('trip-clicked', {tripId: trip.id})
     },
 
-    onDragStart(event: DragEvent, trip: Trip, tripIndex: number) {
+    onDragStart(event: DragEvent, trip: Trip) {
       tripReassignment.setData({
         start: trip.startTime,
         end: imputedEndTime(trip),
-        key: tripKey(trip),
-        tripIndex,
+        tripId: trip.id,
       })
       // Firefox insists on this to activate the drag
       event.dataTransfer!.setData('text/team-reorder-drag', 'dummy')

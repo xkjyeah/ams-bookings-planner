@@ -38,12 +38,11 @@ export function tripKey (trip: KeyableTrip) {
  * modifications to ensure optimized accesses.
  */
 type ScheduleData = {
-  trips: Trip[],
-  rows: number[][],
+  rows: string[][],
 }
 export type ProcessedScheduleData = {
   trips: Trip[],
-  tripIndices: number[],
+  // tripIndices: number[],
   row: number,
   rowCount: number,
 }
@@ -72,6 +71,7 @@ export type AutoUpdateTrips = {
 export interface TripsState {
   scheduleByTeam: ScheduleByTeam,
   teams: Team[],
+  trips: {[key: string]: Trip},
   // Only to be used when switching between dates, for example.
   // because when switching between dates, there as in ambiguity
   // while requests are in flight as to which is the *current* day
@@ -108,14 +108,20 @@ export default {
         trips: [],
         teamsKey: 'a',
         tripsKey: 'b',
-      }
+      },
+      trips: {},
     }
   },
 
   getters: {
     trips (state: TripsState) {
-      return _.flatten(Object.values(state.scheduleByTeam)
-        .map((v: ScheduleData) => v.trips))
+      return _.flatMap(
+        Object.values(state.scheduleByTeam),
+        (v: ScheduleData) => _.flatMap(
+          v.rows,
+          tripIds => tripIds.map(tripId => state.trips[tripId])
+        )
+      )
     },
 
     rowCount (state: TripsState) {
@@ -178,18 +184,11 @@ export default {
           const key = tripKey(team)
           const schedule = state.scheduleByTeam[key] || {trips: [], rows: [[]]}
 
-          // FOR DEBUGGING ONLY
-          if (process.env.NODE_ENV !== 'production') {
-            if (schedule.trips.length !== _.sumBy(schedule.rows, rs => rs.length)) {
-              throw new Error('Trips length != elements in row!' + tripKey(team))
-            }
-          }
-
-          return schedule.rows.map((indices: number[], rowIndex: number): [KeyableTrip, ProcessedScheduleData] => [
+          return schedule.rows.map((tripIds: string[], rowIndex: number): [KeyableTrip, ProcessedScheduleData] => [
             team,
             {
-              trips: indices.map(i => schedule.trips[i]),
-              tripIndices: indices,
+              trips: tripIds.map(tripId => state.trips[tripId]),
+              // tripIndices: indices,
               row: rowIndex,
               rowCount: schedule.rows.length,
             }
@@ -224,8 +223,10 @@ export default {
 
       // If team doesn't exist, create the team?
       if (toSchedule) {
-        toSchedule.trips.push(trip)
-        toSchedule.rows = packTrips(toSchedule.trips)
+        toSchedule.rows = packTrips(
+          _.flatten(toSchedule.rows)
+            .map(tripId => state.trips[tripId])
+        )
       } else {
         const team = {
           driver: trip.driver,
@@ -234,8 +235,7 @@ export default {
         }
         state.teams.splice(0, 0, team)
         Vue.set(state.scheduleByTeam, tripKey(team), {
-          trips: [trip],
-          rows: [[0]],
+          rows: [[trip.id]],
         })
       }
 
@@ -260,29 +260,32 @@ export default {
           assert(toSchedule, 'Trip does not exist in To')
         } else {
           toSchedule = state.scheduleByTeam[BLANK_KEY] = {
-            trips: [],
-            rows: [[0]],
+            rows: [[options.trip.id]]
           }
           state.teams.splice(0, 0, {driver: null, medic: null, vehicle: null})
         }
       }
 
       // splice the trip
-      const index = fromSchedule.trips.findIndex(trip =>
-        trip.id === options.trip.id
-      )
-      assert(index !== -1)
-      fromSchedule.trips.splice(index, 1)
-      fromSchedule.rows = packTrips(fromSchedule.trips)
+      const prevTeamNewTripSet = _.flatten(fromSchedule.rows)
+        .filter(tripId => tripId !== options.trip.id)
+        .map(tripId => state.trips[tripId])
+      fromSchedule.rows = packTrips(prevTeamNewTripSet)
 
       // re-insert
+      const nextTeamNewTripSet = _.flatten(toSchedule.rows)
+        .map(tripId => state.trips[tripId])
+
       const trip = {
         ...options.trip,
         driver: options.team.driver,
         medic: options.team.medic,
       }
-      toSchedule.trips.push(trip)
-      toSchedule.rows = packTrips(toSchedule.trips)
+
+      toSchedule.rows = packTrips([
+        ...nextTeamNewTripSet,
+        trip
+      ])
 
       syncTrip(state.mode, trip)
     },
@@ -355,13 +358,13 @@ export default {
 
     updateTrip (
       state: TripsState,
-      options: {team: KeyableTrip, index: number, updates: {[key: string]: any}}
+      options: {tripId: string, updates: {[key: string]: any}}
     ) {
       assert(!('driver' in options.updates))
       assert(!('medic' in options.updates))
-      // FIXME: Type safety?
-      const schedule = state.scheduleByTeam[tripKey(options.team)]
-      const trip: any = schedule.trips[options.index]
+
+      const trip: any = state.trips[options.tripId]
+      const schedule: ScheduleData = state.scheduleByTeam[tripKey(trip)]
 
       assert(trip)
 
@@ -370,7 +373,7 @@ export default {
       }
 
       if ('startTime' in options.updates || 'endTime' in options.updates) {
-        schedule.rows = packTrips(schedule.trips)
+        schedule.rows = packTrips(_.flatten(schedule.rows).map(tripId => state.trips[tripId]))
       }
 
       if (!state.savesDisabled) {
@@ -380,11 +383,15 @@ export default {
       }
     },
 
-    deleteTrip(state: TripsState, options: {team: KeyableTrip, tripIndex: number}) {
-      const schedule = state.scheduleByTeam[tripKey(options.team)]
-      const trip = schedule.trips[options.tripIndex]
-      schedule.trips.splice(options.tripIndex, 1)
-      schedule.rows = packTrips(schedule.trips)
+    deleteTrip(state: TripsState, options: {tripId: string}) {
+      const trip: any = state.trips[options.tripId]
+      const schedule: ScheduleData = state.scheduleByTeam[tripKey(trip)]
+
+      schedule.rows = packTrips(
+        _.flatten(schedule.rows)
+          .filter(tripId => tripId !== trip.id)
+          .map(tripId => state.trips[tripId])
+      )
       syncDeleteTrip(state.mode, trip)
     },
 
@@ -399,6 +406,10 @@ export default {
 
     _enableSaves (state: TripsState) {
       state.savesDisabled = false
+    },
+
+    _setTrips(state: TripsState, trips: {[key: string]: Trip}) {
+      state.trips = trips
     },
 
     _setSchedules(state: TripsState, schedule: ScheduleByTeam) {
@@ -471,9 +482,10 @@ export default {
     },
 
     _setTripsAndTeams(context: any, options: {teams: Team[], trips: Trip[], mode: AppMode}) {
-      const [teams, schedules] = generateSchedule(options.teams, options.trips)
+      const [teams, schedules, tripsById] = generateSchedule(options.teams, options.trips)
       context.commit('updateTeams', teams)
       // context.commit('') // No trips to commit?
+      context.commit('_setTrips', tripsById)
       context.commit('_setSchedules', schedules)
       context.commit('_setMode', options.mode)
       context.commit('_enableSaves')
@@ -544,7 +556,7 @@ export function parseTeamsData(v: firebase.database.DataSnapshot) {
 function generateSchedule(
   teams: Team[],
   trips: Trip[]
-): [KeyableTrip[], ScheduleByTeam] {
+): [KeyableTrip[], ScheduleByTeam, {[key: string]: Trip}] {
   const teamByKey = _.mapValues(
     _.keyBy(
       teams.filter(t => t.driver || t.medic),
@@ -575,7 +587,6 @@ function generateSchedule(
       return [
         key,
         {
-          trips: trips,
           rows: packTrips(trips),
         }
       ]
@@ -585,6 +596,7 @@ function generateSchedule(
   return [
     newTeams,
     schedule,
+    _.keyBy(trips, 'id'),
   ]
 }
 
@@ -593,14 +605,14 @@ function generateSchedule(
  * pack them in such a way that there are no conflicts. Ensures
  * at least one row will be generated
  */
-function packTrips(trips: Trip[]): number[][] {
-  const arrayOfTrips: number[][] = []
+function packTrips(trips: Trip[]): string[][] {
+  const arrayOfTrips: Trip[][] = []
 
   const last = <T>(t: T[]) => t[t.length - 1]
 
-  const sortedTrips = _.sortBy(
-    _.range(0, trips.length),
-    (t: number) => trips[t].startTime
+  const sortedTrips: Trip[] = _.sortBy(
+    trips,
+    (trip: Trip) => trip.startTime
   )
 
   const conflictsWith = (a: Trip, b: Trip) => {
@@ -608,14 +620,15 @@ function packTrips(trips: Trip[]): number[][] {
       Math.max(a.startTime, b.startTime)
   }
 
-  sortedTrips.forEach((tripIndex) => {
-    const nonConflicting = arrayOfTrips.find(tripIndices =>
-      !conflictsWith(trips[tripIndex], trips[last(tripIndices)])
-    )
+  sortedTrips.forEach((trip: Trip) => {
+    const nonConflicting = arrayOfTrips.find(tripsInRow => {
+      const lastTrip = last(tripsInRow)
+      return !conflictsWith(trip, lastTrip)
+    })
     if (!nonConflicting) {
-      arrayOfTrips.push([tripIndex])
+      arrayOfTrips.push([trip])
     } else {
-      nonConflicting.push(tripIndex)
+      nonConflicting.push(trip)
     }
   })
 
@@ -623,7 +636,7 @@ function packTrips(trips: Trip[]): number[][] {
     arrayOfTrips.push([])
   }
 
-  return arrayOfTrips
+  return arrayOfTrips.map(tripsInRow => tripsInRow.map(trip => trip.id))
 }
 
 // TODO: We may want to partition by trips by date, and fetch them all
@@ -689,5 +702,6 @@ export function parseTripsData(v: firebase.database.DataSnapshot): Trip[] {
       cancelled: tripRaw.cancelled || false,
       created: tripRaw.created || Date.now(),
       templateTrip: tripRaw.templateTrip || null,
+      messages: tripRaw.messages ? deserializeArray(tripRaw.messages) : [],
     }))
 }

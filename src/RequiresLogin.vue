@@ -43,7 +43,7 @@ import firebase from 'firebase'
 export default Vue.extend({
   data () {
     return {
-      errorReading: null,
+      errorReading: null as boolean | null,
     }
   },
 
@@ -63,7 +63,7 @@ export default Vue.extend({
   },
 
   mounted () {
-    const unsubscribe = auth.onAuthStateChanged((user: firebase.auth.User) => {
+    const unsubscribe = auth.onAuthStateChanged((user: firebase.User | null) => {
       this.$store.commit('login/updateUser', user && user.email)
     })
     this.$on('destroyed', () => unsubscribe())

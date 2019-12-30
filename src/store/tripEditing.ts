@@ -5,8 +5,7 @@ import * as Vuex from 'vuex'
 import uniqueId from '@/lib/uniqueId';
 
 export interface TripEditingState {
-  teamBeingEdited: KeyableTrip | null,
-  tripIndexBeingEdited: number,
+  tripBeingEdited: string | null,
 }
 
 /**
@@ -17,8 +16,7 @@ export default {
   namespaced: true,
   state (): TripEditingState {
     return {
-      teamBeingEdited: null,
-      tripIndexBeingEdited: 0,
+      tripBeingEdited: null,
     }
   },
 
@@ -28,31 +26,22 @@ export default {
       getters: any,
       rootState: {trips: TripsState}
     ): Trip | null {
-      const key = state.teamBeingEdited &&
-        tripKey(state.teamBeingEdited)
+      const key = state.tripBeingEdited
 
       if (!key) return null
-      const trip = rootState.trips.scheduleByTeam[key] &&
-        rootState.trips.scheduleByTeam[key].trips[state.tripIndexBeingEdited]
-
-      if (!trip) console.warn(`Editing trip by ${key} index ${state.tripIndexBeingEdited}` +
-        ` However the trip was not found`)
-
-      return trip || null
+      return rootState.trips.trips[key]
     }
   },
 
   mutations: {
     editTrip (
       state: TripEditingState,
-      options: {team: KeyableTrip, index: number} | null
+      options: {tripId: string} | null
     ) {
       if (options) {
-        state.teamBeingEdited = options.team
-        state.tripIndexBeingEdited = options.index
+        state.tripBeingEdited = options.tripId
       } else {
-        state.teamBeingEdited = null
-        state.tripIndexBeingEdited = 0
+        state.tripBeingEdited = null
       }
     },
   },
@@ -70,31 +59,17 @@ export default {
       context.commit(
         'trips/updateTrip',
         {
-          team: (context.state as TripEditingState).teamBeingEdited,
-          index: (context.state as TripEditingState).tripIndexBeingEdited,
+          tripId: (context.state as TripEditingState).tripBeingEdited,
           updates,
         },
         {root: true}
       )
     },
 
-    editLatestTripOfTeam (
-      context: any,
-      options: {team: KeyableTrip}
-    ) {
-      context.commit('tripEditing/editTrip', {
-        team: options.team,
-        index: (context.rootState.trips as TripsState)
-          .scheduleByTeam[tripKey(options.team)]
-          .trips.length - 1
-      }, {root: true})
-    },
-
     deleteTrip(context: Vuex.ActionContext<TripEditingState, {}>) {
-      context.commit('trips/deleteTrip', {
-        team: context.state.teamBeingEdited,
-        tripIndex: context.state.tripIndexBeingEdited,
-      }, {root: true})
+      context.commit('trips/deleteTrip',
+        {tripId: context.state.tripBeingEdited},
+        {root: true})
       context.commit('tripEditing/editTrip', null, {root: true})
     },
 
@@ -126,12 +101,10 @@ export default {
       }
 
       context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})
-      context.commit('tripEditing/editTrip', {
-        team: {driver: trip.driver, medic: trip.medic},
-        index: context.rootState.trips.scheduleByTeam[
-          tripKey(trip)
-        ].trips.length - 1
-      }, {root: true})
+      context.commit('tripEditing/editTrip',
+        {tripId: trip.id},
+        {root: true}
+      )
     }
   }
 }
