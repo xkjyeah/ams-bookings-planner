@@ -109,17 +109,17 @@ export default Vue.extend({
           this.timeSinceMidnight || 0
         )
       )
-      const centreX = (boundedTime / 3600e3 * this.xScale()) + 'px'
+      const centreX = (boundedTime / 3600e3 * (this as any).xScale()) + 'px'
       return `calc(${centreX} - 0.75em)`
     },
 
     topPosition (): string {
-      const centreY = (this.yIndex * this.yScale()) + 'px'
+      const centreY = (this.yIndex * (this as any).yScale()) + 'px'
       return `calc(${centreY} + 0.25em)`
     },
 
     height (): string {
-      const rowHeight = (this.rowCount * this.yScale()) + 'px'
+      const rowHeight = (this.rowCount * (this as any).yScale()) + 'px'
       return `calc(${rowHeight} - 0.5em)`
     },
 

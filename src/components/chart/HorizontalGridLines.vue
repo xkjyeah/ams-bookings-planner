@@ -43,7 +43,7 @@ export default Vue.extend({
     },
     unassignedTeamData () {
       const teamSchedules = this.$store.getters['trips/teamSchedules']
-      let firstIndex = null, lastIndex = null
+      let firstIndex: number | null = null, lastIndex: number | null = null
 
       for (let i=0; i<teamSchedules.length; i++) {
         const [team, data] = teamSchedules[i]

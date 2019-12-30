@@ -126,6 +126,7 @@ import Vue from 'vue'
 import _ from 'lodash'
 import store from '@/store'
 import {KeyableTrip} from '@/lib/types'
+import {Person} from '@/store/vehicles'
 import {TripsState, ScheduleByTeam, tripKey} from '@/store/trips'
 import { VehiclesState } from '@/store/vehicles';
 import EditingCell from '@/dialogs/teams/EditingCell.vue';
@@ -166,7 +167,7 @@ export default Vue.extend({
       return (store.state.trips as TripsState).teams || []
     },
     staffList (): ({text: string, value: string}[]) {
-      return _.sortBy(this.$store.getters['vehicles/personArray'].map(s => s.name))
+      return _.sortBy(this.$store.getters['vehicles/personArray'].map((s: Person) => s.name))
     },
     scheduleByTeam () {
       return (store.state.trips.scheduleByTeam) as ScheduleByTeam

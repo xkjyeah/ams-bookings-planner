@@ -158,13 +158,13 @@ export default Vue.extend({
 
   created () {
     this.loadData()
-    this.$messageClient = new MessageClient(db)
+    ;(this as any).$messageClient = new MessageClient(db)
   },
 
   methods: {
     // TODO move to MessageClient
     loadData(lastId: number | null = null) {
-      if (this.$inflightPromise) return
+      if ((this as any).$inflightPromise) return
 
       const ref = db.ref('/sms')
         .orderByChild('created')
@@ -177,13 +177,13 @@ export default Vue.extend({
         ? ref.endAt(lastId - 1e-14 * lastId) // rough ulp?
         : ref
 
-      const promise = this.$inflightPromise = filteredRef
+      const promise = (this as any).$inflightPromise = filteredRef
         .limitToLast(20)
         .once('value')
         .then((v) => {
-          if (this.$inflightPromise !== promise) return
+          if ((this as any).$inflightPromise !== promise) return
 
-          for (let [key, value] of _.orderBy(Object.entries(v.val()), f => f[1].created, 'desc')) {
+          for (let [key, value] of _.orderBy(Object.entries(v.val()), (f: any) => f[1].created, 'desc')) {
             const av = value as any
             this.currentPage.data.push({
               id: av.id || key,
@@ -194,10 +194,10 @@ export default Vue.extend({
             })
           }
 
-          this.$inflightPromise = null
+          ;(this as any).$inflightPromise = null
         }, (e) => {
           console.error(e)
-          this.$inflightPromise = null
+          ;(this as any).$inflightPromise = null
         })
     },
 
@@ -213,7 +213,7 @@ export default Vue.extend({
     handleDateInput(i: string | null) {
       this.maxTime = i
       this.currentPage.data = []
-      this.$inflightPromise = null
+      ;(this as any).$inflightPromise = null
       this.loadData(
         i === null ? null : new Date(i + 'T23:59:59.999+0800').getTime()
       )

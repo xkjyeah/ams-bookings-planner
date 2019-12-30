@@ -1,6 +1,6 @@
 import * as Vuex from 'vuex';
 
-interface ScreenState {
+export interface ScreenState {
   width: number
 }
 

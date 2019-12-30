@@ -89,6 +89,7 @@ import CurrentTime from '@/components/chart/CurrentTime.vue';
 import TripBar from '@/components/chart/TripBar.vue';
 import VehicleMarker from '@/components/chart/VehicleMarker.vue';
 import store from '@/store';
+import {ScreenState} from '@/store/screen';
 import scrollHelper from '@/lib/scrollHelper'
 import * as tripReassignment from './tripReassignment'
 
@@ -108,19 +109,19 @@ export default Vue.extend({
     },
 
     chartAreaHeight () {
-      return store.getters['trips/rowCount'] * this.yAxisScale
+      return this.$store.getters['trips/rowCount'] * this.yAxisScale
     },
 
     trips (): Trip[] {
-      return store.getters['trips/trips']
+      return this.$store.getters['trips/trips']
     },
 
     teamSchedules () {
-      return (store.getters as any)['trips/teamSchedules']
+      return (this.$store.getters as any)['trips/teamSchedules']
     },
 
     screenWidth () {
-      return (store.state.screen.width)
+      return (this.$store.state.screen as ScreenState).width
     }
   },
   components: {
@@ -142,7 +143,7 @@ export default Vue.extend({
     }
   },
   created () {
-    scrollHelper.$on('scrollToTime', (time) => {this.scrollToTime(time)})
+    scrollHelper.$on('scrollToTime', (time: number) => {this.scrollToTime(time)})
   },
   methods: {
     // Ensure that "now" is at ~33% of the page

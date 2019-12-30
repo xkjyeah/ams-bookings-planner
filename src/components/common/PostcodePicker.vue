@@ -51,7 +51,7 @@ export default Vue.extend({
   methods: {
     updateQuery (value: string) {
       this.$emit('input', value)
-      const $updateQueryDebounced = this.$updateQueryDebounced || _.debounce(this.updateQueryImpl, 200)
+      const $updateQueryDebounced = (this as any).$updateQueryDebounced || _.debounce(this.updateQueryImpl, 200)
       $updateQueryDebounced()
     },
 
@@ -69,8 +69,8 @@ export default Vue.extend({
     },
 
     maybeEmitPostcode () {
-      if (this.$updateQueryDebounced) {
-        this.$updateQueryDebounced.cancel()
+      if ((this as any).$updateQueryDebounced) {
+        (this as any).$updateQueryDebounced.cancel()
       }
       this.triggerOneMapSearch().then(() => {
         if (this.lastKnownPostcode && this.value !== this.lastKnownPostcode) {
@@ -80,7 +80,7 @@ export default Vue.extend({
     },
 
     triggerOneMapSearch (): Promise<any> {
-      const promise = this.$oneMapPromise = fetch('https://developers.onemap.sg/commonapi/search?' + querystring.stringify({
+      const promise = (this as any).$oneMapPromise = fetch('https://developers.onemap.sg/commonapi/search?' + querystring.stringify({
         searchVal: this.value,
         returnGeom: 'Y',
         getAddrDetails: 'Y',
@@ -88,7 +88,7 @@ export default Vue.extend({
       }))
       .then(r => r.json())
       .then((result: any) => {
-        if (promise !== this.$oneMapPromise) return
+        if (promise !== (this as any).$oneMapPromise) return
 
         if (result.results && result.results.length > 0) {
           this.$emit('address-found', {

@@ -70,7 +70,7 @@ export default Vue.extend({
   },
 
   created () {
-    this.$messageClient = new MessageClient(db)
+    (this as any).$messageClient = new MessageClient(db)
     this.m.recipients = this.recipients
     this.m.message = this.message
   },
@@ -88,7 +88,7 @@ export default Vue.extend({
 
   methods: {
     sendMessageAndClose(): void {
-      (this.$messageClient as MessageClient).createMessage({
+      ((this as any).$messageClient as MessageClient).createMessage({
         recipients: this.m.recipients,
         message: this.m.message.trim(),
       })
