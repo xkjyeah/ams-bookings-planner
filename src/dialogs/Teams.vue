@@ -250,8 +250,7 @@ export default Vue.extend({
       return !!this.teams.find((existingTeam: KeyableTrip, index: number): boolean => {
         if (index === notInIndex) return false
 
-        if (team.driver === existingTeam.driver &&
-            team.medic === existingTeam.medic) {
+        if (tripKey(team) === tripKey(existingTeam)) {
           return true
         }
 

@@ -1,8 +1,8 @@
 <template>
   <span v-if="value">
     {{value}}
-    <span class="telephone" v-if="persons[value]">
-      {{persons[value].telephone}}
+    <span class="telephone" v-if="persons[value.toLowerCase()]">
+      {{persons[value.toLowerCase()].telephone}}
     </span>
   </span>
   <span v-else class="placeholder">

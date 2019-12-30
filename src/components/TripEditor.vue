@@ -255,22 +255,12 @@ export default Vue.extend({
       const driver = this.tripBeingEdited.driver
       const medic = this.tripBeingEdited.medic
 
-      const driverPerson = this.$store.getters['vehicles/personArray']
-        .find((s: Person) => s.name === driver)
-      const medicPerson = this.$store.getters['vehicles/personArray']
-        .find((s: Person) => s.name === medic)
+      const driverPerson = driver &&
+        this.$store.state.vehicles.persons[driver.toLowerCase()]
+      const medicPerson = medic &&
+        this.$store.state.vehicles.persons[medic.toLowerCase()]
 
       return [driverPerson, medicPerson]
-    },
-
-    tripRecipientPhoneNumberRender (): string {
-      const [p1, p2] = this.tripRecipientPhoneNumbers
-      const renderTelOrSubstitute = (p: Person | null) =>
-        (p && p.telephone) || '(no number)'
-
-      return this.tripRecipientPhoneNumbers
-        .map((p: Person | null) => `${p ? p.name : ''} ${renderTelOrSubstitute(p)}`)
-        .join(', ')
     },
   },
 

@@ -32,4 +32,5 @@ TODO:
 22. [X] Multi-user collaboration
 23. [~] Fix the tabbing mechanism. Maybe simplify it?
 24. [X] Login mechanism
-25. [ ] SMS history
+25. [X] SMS history
+26. [ ] Driver/Medic name matching should be universally case insensitive

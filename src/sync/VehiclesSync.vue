@@ -64,20 +64,13 @@ export default Vue.extend({
       }
 
       const value = e.val()
-      const persons: PersonList = Object.entries(value || {})
+      const persons: Person[] = Object.entries(value || {})
         .map(([key, value]: [string, any]): Person => ({
           name: key,
           telephone: value.telephone || null,
           updated: parseFloat(value.updated) || Date.now(),
           created: parseFloat(value.created) || Date.now(),
         }))
-        .reduce(
-          (acc, v) => {
-            acc[v.name] = v
-            return acc
-          },
-          {} as {[k: string]: Person}
-        )
 
       store.commit('vehicles/setPersons', persons)
     })

@@ -57,20 +57,20 @@ export default {
       state.vehicles = vehicles
     },
 
-    setPersons(state: VehiclesState, persons: PersonList) {
-      state.persons = persons
+    setPersons(state: VehiclesState, persons: Person[]) {
+      state.persons = _.keyBy(persons, p => p.name.toLowerCase())
     },
 
     updatePerson(state: VehiclesState, person: Person) {
       state.persons = {
         ...state.persons,
-        [person.name]: person,
+        [person.name.toLowerCase()]: person,
       }
       syncPerson(person)
     },
 
     deletePerson(state: VehiclesState, person: Person) {
-      const {[person.name]: toDelete, ...rest} = state.persons
+      const {[person.name.toLowerCase()]: toDelete, ...rest} = state.persons
       state.persons = rest
 
       syncDeletePerson(person)
