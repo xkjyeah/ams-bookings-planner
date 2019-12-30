@@ -379,6 +379,7 @@ export default {
       if (!state.savesDisabled) {
         // FIXME: This is bad form! -- async actions
         // on global state inside a synchronous fn
+        // FIXME: debounce this somewhat.../
         syncTrip(state.mode, trip)
       }
     },
@@ -683,7 +684,7 @@ export function parseTripsData(v: firebase.database.DataSnapshot): Trip[] {
         ? parseInt(tripRaw.endTime)
         : null,
       id: tripRaw.id || uniqueId(),
-      description: tripRaw.description || '<No description>',
+      description: tripRaw.description || '',
       startPostcode: tripRaw.startPostcode || null,
       endPostcode: tripRaw.endPostcode || null,
       startAddress: tripRaw.startAddress || null,
