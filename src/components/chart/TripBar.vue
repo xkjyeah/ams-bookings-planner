@@ -1,6 +1,6 @@
 <template>
   <UnobstrusiveTooltip
-    :right="true"
+    :top="true"
     class="trip-box"
     :class="{
       'is-selected': isSelected,

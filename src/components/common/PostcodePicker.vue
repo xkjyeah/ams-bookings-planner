@@ -16,6 +16,7 @@ import querystring from 'querystring'
 import Vault from '@/vault'
 import singaporeColors from '@/lib/singaporeColors'
 import {LatLng} from '@/lib/types'
+import {fakeOneMapSearch} from '@/lib/locations'
 
 /**
  * This takes in a structured object for a location --:
@@ -39,7 +40,7 @@ export default Vue.extend({
 
   data () {
     return {
-      lastKnownPostcode: null,
+      lastKnownPostcode: null as string | null,
     }
   },
 
@@ -79,36 +80,22 @@ export default Vue.extend({
       })
     },
 
-    triggerOneMapSearch (): Promise<any> {
-      const promise = (this as any).$oneMapPromise = fetch('https://developers.onemap.sg/commonapi/search?' + querystring.stringify({
-        searchVal: this.value,
-        returnGeom: 'Y',
-        getAddrDetails: 'Y',
-        pageNum: 1,
-      }))
-      .then(r => r.json())
-      .then((result: any) => {
-        if (promise !== (this as any).$oneMapPromise) return
+    triggerOneMapSearch (): Promise<void> {
+      const promise = (this as any).$oneMapPromise = fakeOneMapSearch(this.value)
+        .then((result) => {
+          if (promise !== (this as any).$oneMapPromise) return
 
-        if (result.results && result.results.length > 0) {
-          this.$emit('address-found', {
-            address: result.results[0].ADDRESS,
-            latLng: {
-              lat: parseFloat(result.results[0].LATITUDE),
-              lng: parseFloat(result.results[0].LONGITUDE),
-            },
-          })
-          this.lastKnownPostcode = result.results[0].POSTAL !== 'NIL'
-            ? result.results[0].POSTAL
-            : null
-        } else {
-          this.$emit('address-found', {
-            address: '(not found)',
-            latLng: null,
-          })
-          this.lastKnownPostcode = null
-        }
-      })
+          if (result === null) {
+            this.$emit('address-found', {
+              address: '(not found)',
+              latLng: null,
+            })
+            this.lastKnownPostcode = null
+          } else {
+            this.$emit('address-found', result)
+            this.lastKnownPostcode = result.postalCode
+          }
+        })
       return promise
     },
   }
