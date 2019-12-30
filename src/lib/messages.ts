@@ -15,7 +15,7 @@ export interface Message {
 
 export function parseMessages(d: firebase.database.DataSnapshot): Message[] {
   const messagesRaw = d.val()
-  return _.orderBy(Object.entries(messagesRaw), (f: any) => f[1].created, 'desc')
+  return _.orderBy(Object.entries(messagesRaw || {}), (f: any) => f[1].created, 'desc')
     .map(([key, value]) => {
       const av = value as any
 
