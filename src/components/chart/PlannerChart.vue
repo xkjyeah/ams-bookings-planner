@@ -101,7 +101,7 @@ export default Vue.extend({
   props: {
     yAxisWidth: {
       type: Number,
-      default: 100,
+      default: 150,
     },
     yAxisScale: {
       type: Number,
