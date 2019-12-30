@@ -20,7 +20,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import {db} from '@/lib/firebase';
-import {} from 'firebase'
 
 export default Vue.extend({
   props: ['status', 'id'],

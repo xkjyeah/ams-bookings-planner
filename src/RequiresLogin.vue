@@ -38,7 +38,7 @@
 import Vue from 'vue';
 import { readTrips } from './store/trips';
 import {auth} from '@/lib/firebase'
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 
 export default Vue.extend({
   data () {

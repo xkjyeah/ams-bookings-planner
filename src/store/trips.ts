@@ -3,7 +3,7 @@ import _ from 'lodash'
 import uniqueId from '@/lib/uniqueId';
 import assert from 'assert'
 import {db} from '@/lib/firebase'
-import * as Firebase from 'firebase'
+import * as firebase from 'firebase/app'
 import dateformat from 'dateformat';
 import querystring from 'querystring';
 import Vue from 'vue';
@@ -540,7 +540,7 @@ export function deserializeArray(o: {[key: string]: any}): any[] {
 export function readTeams(mode: AppMode): Promise<Team[]> {
   return db.ref(`/teams/${getRelPath(mode)}`)
   .once('value')
-  .then((values: Firebase.database.DataSnapshot) => parseTeamsData(values))
+  .then((values: firebase.database.DataSnapshot) => parseTeamsData(values))
 }
 
 export function parseTeamsData(v: firebase.database.DataSnapshot) {
