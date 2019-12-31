@@ -216,6 +216,9 @@ export default Vue.extend({
     singaporeColors: () => singaporeColors,
 
     deleteAllowed (): Boolean {
+      if ((this.$store.state.trips as TripsState).mode.type === 'template') {
+        return true
+      }
       const now = this.$store.state.time.time
       return (now - this.tripBeingEdited.created) < 15 * 60e3
     },
