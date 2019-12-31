@@ -1,4 +1,5 @@
 import querystring from 'querystring'
+import _ from 'lodash'
 
 export const PRESET_LOCATIONS: {[key: string]: string} = {
   NTF: '609606',
@@ -22,16 +23,22 @@ export interface AddressSearchResult {
 
 const oneMapResultsToAddressSearchResult = (result: any) => {
   if (result.results && result.results.length > 0) {
+    const bestResult = _.minBy(
+      result.results,
+      // find shortest addresses (ideally should exclude the ATMs)
+      // also try to exclude nil postal codes
+      (r: any) => [r.POSTAL === 'NIL', r.ADDRESS.length]
+    )
     return {
-      address: (result.results[0].ADDRESS as string)
+      address: (bestResult.ADDRESS as string)
         .toLowerCase()
         .replace(/(?:\b|^)[a-z]/g, s => s.toUpperCase()),
       latLng: {
-        lat: parseFloat(result.results[0].LATITUDE),
-        lng: parseFloat(result.results[0].LONGITUDE),
+        lat: parseFloat(bestResult.LATITUDE),
+        lng: parseFloat(bestResult.LONGITUDE),
       },
-      postalCode: result.results[0].POSTAL !== 'NIL'
-        ? (result.results[0].POSTAL as string)
+      postalCode: bestResult.POSTAL !== 'NIL'
+        ? (bestResult.POSTAL as string)
         : null,
     }
   } else {

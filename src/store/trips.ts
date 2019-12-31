@@ -640,10 +640,70 @@ function packTrips(trips: Trip[]): string[][] {
   return arrayOfTrips.map(tripsInRow => tripsInRow.map(trip => trip.id))
 }
 
-// TODO: We may want to partition by trips by date, and fetch them all
+// We want to throttle by individual keys
+const updates: {
+  [key: string]: {
+    backlog: {[key: string]: any} | null,
+    state: 'inflight' | 'errored',
+  }
+} = {}
+function triggerSend(refPath: string, tripId: string) {
+  const dataSent = updates[tripId].backlog
+  updates[tripId].state = 'inflight'
+  updates[tripId].backlog = null
+  return db.ref(refPath).set(dataSent)
+    .then(() => {
+      if (updates[tripId].backlog) {
+        triggerSend(refPath, tripId)
+      } else {
+        delete updates[tripId]
+      }
+    })
+    .catch(() => {
+      updates[tripId].state = 'errored'
+      if (updates[tripId].backlog) {
+        updates[tripId].backlog = {
+          ...dataSent,
+          ...updates[tripId].backlog,
+        }
+        triggerSend(refPath, tripId)
+      } else {
+        updates[tripId].backlog = dataSent
+        // Wait for the next update to trigger
+        // FIXME: flash some error message
+      }
+    })
+}
+function submitUpdates(refPath: string, tripId: string, data: {[key: string]: any}) {
+  if (tripId in updates && updates[tripId].state === 'inflight') {
+    updates[tripId].backlog = {
+      ...updates[tripId].backlog,
+      ...data
+    }
+    // don't trigger sending, let this be picked up by the current loop
+  } else if (tripId in updates && updates[tripId].state === 'errored') {
+    updates[tripId].backlog = {
+      ...updates[tripId].backlog,
+      ...data
+    }
+    triggerSend(refPath, tripId)
+  } else if (!(tripId in updates)) {
+    updates[tripId] = {
+      backlog: data,
+      state: 'inflight',
+    }
+    triggerSend(refPath, tripId)
+  }
+}
+export function getPendingTripUpdates(tripId: string): {} | null {
+  return (updates[tripId] && updates[tripId].backlog) || null
+}
 function syncTrip(mode: AppMode, trip: Trip) {
-  trip.id = trip.id || uniqueId()
-  db.ref(`/trips/${getRelPath(mode)}/${trip.id}`).set(trip)
+  if (!trip.id) {
+    throw new Error('A trip has no ID for syncing!')
+  }
+  const refPath = `/trips/${getRelPath(mode)}/${trip.id}`
+  submitUpdates(refPath, trip.id, trip)
 }
 function syncDeleteTrip(mode: AppMode, trip: Trip) {
   assert(trip.id, 'Wanted to delete a trip without an ID')

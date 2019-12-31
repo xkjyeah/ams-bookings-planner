@@ -8,7 +8,8 @@ import _ from 'lodash'
 import {VehicleStatus, Person, PersonList} from '@/store/vehicles'
 import {db} from '@/lib/firebase'
 import store from '@/store'
-import {AppMode, getRelPath, parseTripsData, parseTeamsData, AutoUpdateTrips} from '@/store/trips'
+import {Trip} from '@/lib/types'
+import {AppMode, getRelPath, getPendingTripUpdates, parseTripsData, parseTeamsData, AutoUpdateTrips} from '@/store/trips'
 
 export default Vue.extend({
   computed: {
@@ -25,8 +26,24 @@ export default Vue.extend({
     const $tripsCallback = (e: firebase.database.DataSnapshot | null) => {
       if (!e) return
 
+      const updateWithBacklog = (trips: Trip[]): Trip[] =>
+        trips.map(trip => {
+          const pendingUpdates = getPendingTripUpdates(trip.id)
+          if (pendingUpdates) {
+            return {
+              ...trip,
+              ...pendingUpdates,
+            }
+          } else {
+            return trip
+          }
+        })
+
+      // Because we expect trips to be updated at much higher
+      // frequency, and with less tolerance for collisions,
+      // we merge with trip data that hasn't been submitted
       this.autoUpdateTrips({
-        trips: parseTripsData(e),
+        trips: updateWithBacklog(parseTripsData(e)),
         tripsKey: e.key || '',
       })
     }
