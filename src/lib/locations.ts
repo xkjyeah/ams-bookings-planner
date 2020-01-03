@@ -46,7 +46,8 @@ const oneMapResultsToAddressSearchResult = (result: any) => {
   }
 }
 
-export function fakeOneMapSearch(query: string): Promise<AddressSearchResult | null> {
+export function fakeOneMapSearch(query: string | null): Promise<AddressSearchResult | null> {
+  if (!query) return Promise.resolve(null)
   const upperCaseQuery = query.toUpperCase()
 
   if (upperCaseQuery in PRESET_LOCATIONS) {

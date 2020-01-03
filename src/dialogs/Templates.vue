@@ -33,9 +33,9 @@
         </v-list-tile>
       </v-list>
       <div class="table-section">
-        <v-item-group class="table-toolbar" @click="addTemplateJobsToSchedule"
+        <v-item-group class="table-toolbar"
             v-if="previewTrips">
-          <v-btn>Add All</v-btn>
+          <v-btn @click="addTemplateJobsToSchedule">Add All</v-btn>
         </v-item-group>
         <div class="table-scroll">
           <table class="templates-table">
