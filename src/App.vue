@@ -172,7 +172,7 @@ export default Vue.extend({
   name: 'app',
   data () {
     return {
-      xAxisScale: 100,
+      xAxisScale: 150,
       yAxisScale: 25,
     }
   },
