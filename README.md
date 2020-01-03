@@ -30,7 +30,13 @@ TODO:
 14. [ ] Allow driver/medics to have starting/ending times/locations?
   - [X] SMS support
 22. [X] Multi-user collaboration
-23. [~] Fix the tabbing mechanism. Maybe simplify it?
+23. [X] Fix the tabbing mechanism. Maybe simplify it?
 24. [X] Login mechanism
 25. [X] SMS history
-26. [ ] Driver/Medic name matching should be universally case insensitive
+26. [X] Driver/Medic name matching should be universally case insensitive
+27. [ ] Importing from templates, should also import relationship between trips
+28. [ ] When creating future trips, use the current scrolled time instead of current time
+29. [ ] Sent message indicator
+30. [ ] Return trip, done by whom, prev description
+31. [ ] include team name in SMS
+32. [ ] bug: cannot create return trip when return trip deleted

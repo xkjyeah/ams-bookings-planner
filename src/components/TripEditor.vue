@@ -16,7 +16,7 @@
           >
           <v-icon>history</v-icon>
         </v-btn>
-        <v-menu offset-y v-if="!tripBeingEdited.relatedTrip">
+        <v-menu offset-y v-if="!hasValidReturnTrip">
           <template v-slot:activator="{on}">
             <v-btn v-on="on" icon>
               <v-icon>looks_two</v-icon>
@@ -50,7 +50,7 @@
     <v-card-text>
       <MessageHistory v-if="historyShown" :tripId="tripBeingEdited.id" />
       <a href="#" @click.prevent="visitRelatedTrip"
-          v-if="tripBeingEdited.relatedTrip && $store.state.trips.trips[tripBeingEdited.relatedTrip]">
+          v-if="hasValidReturnTrip">
         {{tripBeingEdited.isReturnTrip
           ? 'First trip'
           : 'Return trip'}}
@@ -221,6 +221,14 @@ export default Vue.extend({
       }
       const now = this.$store.state.time.time
       return (now - this.tripBeingEdited.created) < 15 * 60e3
+    },
+
+    hasValidReturnTrip (): Boolean {
+      const relatedTripId = this.tripBeingEdited.relatedTrip
+      return !!(
+        relatedTripId &&
+        (this.$store.state.trips as TripsState).trips[relatedTripId]
+      )
     },
 
     message (): string {
