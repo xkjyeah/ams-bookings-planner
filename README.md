@@ -10,7 +10,7 @@ TODO:
   - [X] Scrolling messes things up!
 8. [X] Persisting to a backend
 9. [X] Split by origin / destination
-7. [ ] Import a bunch of regular / historical trips (for dialysis)
+7. [X] Import a bunch of regular / historical trips (for dialysis)
 10. [X] Disable all controls in editor if trip is cancelled
 
 12. [X] Add additional information about driver / medic (e.g. phone number)

@@ -1,13 +1,24 @@
 <template>
   <StandardDialog
-    title="Send Message"
+    title="Send SMS"
     name="draftMessage"
     height="80vh"
   >
-    <h3>Send to</h3>
+    <h3>Send to:
+      <template v-for="(person, i) in persons">
+        <span v-if="person.name"
+          :key="i">
+          {{person.name}}
+          ({{person.telephone}})
+        </span>
+        <span v-else :key="i">
+          {{person.telephone}}
+        </span>
+        <template v-if="i < persons.length - 1">,</template>
+      </template>
+    </h3>
     <v-alert
       :value="hasPersonsMissingPhoneNumbers"
-      label=""
       >
       Some people on this list do not have phone numbers.
       <strong>They will not receive your message</strong>.
@@ -16,24 +27,15 @@
         Update the phone number list.
       </v-btn>
     </v-alert>
-    <template v-for="(person, i) in persons">
-      <span v-if="person.name"
-        :key="i">
-        {{person.name}}
-        ({{person.telephone}})
-      </span>
-      <span v-else :key="i">
-        {{person.telephone}}
-      </span>
-      <template v-if="i < persons.length - 1">,</template>
-    </template>
-    <hr/>
-    <v-textarea
-      label="Message"
-      v-model="m.message"
-      rows="5"
-      auto-grow
-      />
+    <div class="message-bubble">
+      <v-textarea
+        ref="message"
+        label="Message"
+        v-model="m.message"
+        rows="5"
+        auto-grow
+        />
+    </div>
 
     <v-btn
       color="primary"
@@ -49,6 +51,15 @@
 
   </StandardDialog>
 </template>
+<style>
+.message-bubble {
+  border: solid 3px black;
+  border-radius: 0 0.5em 0.5em 0.5em;
+  padding: 0.5em;
+  background-color: #FFC;
+  font-family: monospace;
+}
+</style>
 <script lang="ts">
 import Vue from 'vue'
 import {db} from '@/lib/firebase'
@@ -59,6 +70,7 @@ import {Person} from '@/store/vehicles'
 import {TripsState} from '@/store/trips'
 import store from '@/store'
 import StandardDialog from '@/dialogs/StandardDialog.vue';
+import assert from 'assert'
 
 interface Recipient {
   name?: string,
@@ -87,6 +99,17 @@ export default Vue.extend({
     this.m.message = this.message
   },
 
+  mounted () {
+    const messager: any = this.$refs['message']
+
+    this.$nextTick(() => {
+      messager
+        .$el
+        .querySelector('textarea')
+        .select()
+    })
+  },
+
   computed: {
     persons(): Recipient[] {
       // Quadratic but who cares
@@ -98,7 +121,10 @@ export default Vue.extend({
     },
 
     hasPersonsMissingPhoneNumbers(): boolean {
-      return this.recipients.length < 2
+      return this.recipients.length < [
+        store.state.trips.trips[this.trip].driver,
+        store.state.trips.trips[this.trip].medic,
+      ].filter(s => Boolean(s)).length
     }
   },
 

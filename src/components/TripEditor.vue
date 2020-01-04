@@ -247,10 +247,13 @@ export default Vue.extend({
           .replace(/\btanjong\b/ig, 'Tg')
           .replace(/\bjalan\b/ig, 'Jln')
           .replace(/\blorong\b/ig, 'Lor')
+          .replace(/\bavenue\b/ig, 'Ave')
+          .replace(/\bboulevard\b/ig, 'Blvd')
+          .replace(/\bsingapore\b/ig, 'sgp')
       const condense = (s: string) => s.trim()
         .replace(/\s+/g, ' ')
       const removeIndent = (s: string) => s.replace(
-        /\s+\n\s+/g, '\n'
+        /\s*\n\s+/g, '\n'
       )
 
       const tripPart = trip.description || ''
@@ -262,8 +265,12 @@ export default Vue.extend({
         ${trip.endAddress || ''} ${trip.endLocation || ''}
       `)
       const datePart = dateformat(trip.startTime, 'HH:MM', true)
+      const addressee = [trip.driver, trip.medic]
+        .filter(s => Boolean(s))
+        .join('/')
 
       return removeIndent(`
+      ${addressee}:
       ${condense(tripPart)} ${cancelledPart}
       ${startAddressPart} - ${endAddressPart}
       @${datePart}
