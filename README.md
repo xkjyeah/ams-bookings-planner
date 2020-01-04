@@ -37,8 +37,8 @@ TODO:
 27. [X] Importing from templates, should also import relationship between trips
 28. [X] When creating future trips, use the current scrolled time instead of current time
 29. [X] Sent message indicator
-30. [ ] Return trip, done by whom, prev description
-31. [ ] include team name in SMS
+30. [X] Return trip, done by whom, prev description
+31. [X] include team name in SMS
 32. [X] bug: cannot create return trip when return trip deleted
 34. [X] Dialysis trip indicator, hide from manifest
 35. [X] Warn when some members do not have (valid) phone numbers

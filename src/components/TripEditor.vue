@@ -264,16 +264,22 @@ export default Vue.extend({
       const endAddressPart = condenseAddress(`
         ${trip.endAddress || ''} ${trip.endLocation || ''}
       `)
-      const datePart = dateformat(trip.startTime, 'HH:MM', true)
+      const makeDate = (s: number) => dateformat(s, 'HH:MM', true)
+      const datePart = makeDate(trip.startTime)
       const addressee = [trip.driver, trip.medic]
         .filter(s => Boolean(s))
         .join('/')
+      const returnTrip: Trip | null = trip.relatedTrip && this.$store.state.trips.trips[trip.relatedTrip]
+      const returnTripInfo = (trip.isReturnTrip && returnTrip)
+        ? `1st trip: ${[returnTrip.driver, returnTrip.medic].filter(Boolean).join('+')} @${makeDate(returnTrip.startTime)}`
+        : ''
 
       return removeIndent(`
       ${addressee}:
       ${condense(tripPart)} ${cancelledPart}
       ${startAddressPart} - ${endAddressPart}
       @${datePart}
+      ${returnTripInfo}
       `).trim()
     },
 
