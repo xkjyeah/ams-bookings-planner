@@ -48,7 +48,9 @@
     box-shadow: 0px 0px 4px rgba(0, 0, 153, 0.5);
   }
   &.is-tentative {
-    border: dashed 1px #404;
+    // border: dashed 1px #404;
+    box-shadow: inset 0px 0px 8px #FFF;
+    border: dashed 1px #FFF;
   }
   &.is-selected {
     box-shadow: 0px 0px 4px #009;

@@ -2,6 +2,7 @@
   <PlannerChart class="planner-chart"
     :xAxisScale="xAxisScale"
     :yAxisScale="yAxisScale"
+    @scroll.native="onScroll"
     >
     <template slot="background-svg" slot-scope="s">
       <svg :width="0.5 * screenWidth + chartAreaWidth + s.yAxisWidth"
@@ -93,6 +94,8 @@ import {ScreenState} from '@/store/screen';
 import scrollHelper from '@/lib/scrollHelper'
 import * as tripReassignment from './tripReassignment'
 
+const VISUAL_CENTER = 0.33
+
 export default Vue.extend({
   name: 'app',
   props: {
@@ -156,7 +159,7 @@ export default Vue.extend({
       const myWidth = this.$el.clientWidth
       const timePosition = timeOffset / 3600e3 * this.xAxisScale
 
-      const scrollPosition = timePosition - 0.33 * myWidth
+      const scrollPosition = timePosition - VISUAL_CENTER * myWidth
 
       this.$el.scrollLeft = scrollPosition
     },
@@ -165,7 +168,7 @@ export default Vue.extend({
       const myWidth = this.$el.clientWidth
       const timePosition = time / 3600e3 * this.xAxisScale
 
-      const scrollPosition = timePosition - 0.33 * myWidth
+      const scrollPosition = timePosition - VISUAL_CENTER * myWidth
 
       const scrollABit = (n: number) => {
         if (n == 10) return
@@ -212,6 +215,14 @@ export default Vue.extend({
         time: alignedStartTime,
         ...team,
       })
+    },
+
+    onScroll(event: Event) {
+      this.$store.commit('screen/setScrollTime',
+        (this.$el.scrollLeft + VISUAL_CENTER * this.$el.clientWidth)
+          / this.xAxisScale
+          * 3600e3
+      )
     },
   }
 });

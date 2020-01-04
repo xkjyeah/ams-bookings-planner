@@ -195,6 +195,7 @@ import {} from 'googlemaps'
 import {tripKey, TripsState, ProcessedScheduleData} from '@/store/trips'
 import uniqueId from '@/lib/uniqueId';
 import dateformat from 'dateformat'
+import scrollHelper from '@/lib/scrollHelper'
 
 export default Vue.extend({
   components: {
@@ -347,6 +348,7 @@ export default Vue.extend({
 
       if (relatedTrip) {
         this.$store.commit('tripEditing/editTrip', {tripId: relatedTripId})
+        scrollHelper.$emit('scrollToTime', relatedTrip.startTime)
       } else {
         this.updateTrip('relatedTrip', null)
       }

@@ -8,7 +8,7 @@ import TripEditing from '@/store/tripEditing.ts'
 import Templates from '@/store/templates';
 import Login from './store/login';
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   modules: {
     screen: Screen,
     time: Time,
@@ -20,3 +20,9 @@ export default new Vuex.Store({
     templates: Templates,
   },
 })
+
+window.addEventListener('resize', () => {
+  store.commit('screen/setWidth', window.innerWidth)
+})
+
+export default store;

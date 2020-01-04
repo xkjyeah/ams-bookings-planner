@@ -75,7 +75,7 @@
       @trip-clicked="$store.commit('tripEditing/editTrip', $event)"
       />
     <v-btn
-      @click="showNewTripDialog"
+      @click="createNewTrip"
       class="hidden-in-print"
       dark
       fab
@@ -152,6 +152,7 @@ import querystring from 'querystring';
 import Vue from 'vue';
 import {Trip, KeyableTrip} from '@/lib/types.ts';
 import {TripsState, AppMode} from '@/store/trips.ts';
+import {ScreenState} from '@/store/screen.ts';
 import {TemplateMetadata} from '@/store/templates.ts';
 import {initializeHashWatch} from '@/store/modes'
 import ChartArea from '@/components/chart/ChartArea.vue';
@@ -241,15 +242,37 @@ export default Vue.extend({
       store.commit('dialogs/showDialog', dialogName)
     },
 
-    showNewTripDialog () {
+    createNewTrip () {
       const midnight = new Date
       midnight.setHours(0, 0, 0, 0)
       const delayedTime = (Date.now() - midnight.getTime()) + 10 * 60e3
       const alignedTime = Math.ceil(delayedTime / 5 / 60e3) * 5 * 60e3
-      store.dispatch('tripEditing/createAndEditNewTripAtTime', {
-        time: alignedTime,
-      })
-      this.scrollToCurrentTime()
+      const currentMode = (store.state.trips as TripsState).mode
+
+      const sameDate = (d1n: number, d2: Date) => {
+        const d1 = new Date(d1n)
+        return d1.getFullYear() === d2.getFullYear() &&
+          d1.getMonth() === d2.getMonth() &&
+          d1.getDate() === d2.getDate()
+      }
+      // If it's today, create a new trip at around
+      // the current time
+      if (currentMode.type === 'date' && sameDate(currentMode.timestamp, midnight)) {
+        store.dispatch('tripEditing/createAndEditNewTripAtTime', {
+          time: Math.min(
+            23.75 * 3600e3,
+            alignedTime,
+          ),
+        })
+        this.scrollToCurrentTime()
+      } else {
+        store.dispatch('tripEditing/createAndEditNewTripAtTime', {
+          time: Math.min(
+            23.75 * 3600e3,
+            Math.ceil((this.$store.state.screen as ScreenState).scrollTime / 900e3) * 900e3
+          ),
+        })
+      }
     },
 
     importJobs () {

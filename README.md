@@ -35,10 +35,10 @@ TODO:
 25. [X] SMS history
 26. [X] Driver/Medic name matching should be universally case insensitive
 27. [ ] Importing from templates, should also import relationship between trips
-28. [ ] When creating future trips, use the current scrolled time instead of current time
+28. [X] When creating future trips, use the current scrolled time instead of current time
 29. [ ] Sent message indicator
 30. [ ] Return trip, done by whom, prev description
 31. [ ] include team name in SMS
 32. [X] bug: cannot create return trip when return trip deleted
 33. [ ] For future trips, show current users current position in the chart
-34. [ ] Dialysis trip indicator, hide from manifest
+34. [X] Dialysis trip indicator, hide from manifest

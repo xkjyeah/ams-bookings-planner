@@ -231,6 +231,25 @@ export default Vue.extend({
           templateTrip: trip.id,
           id: uniqueId(),
         }
+
+        // Expensive, but fuck it -- we import trips once a day, so the
+        // computational complexity doesn't justify a hashmap
+        // If there is a relatedTrip, find the trip with the related template ID
+        // and assign as this trip's relatedTrip.
+        // If found, also replace the relatedTrip's related trip
+        if (newTrip.relatedTrip) {
+          const relatedTrip = Object.values((this.$store.state.trips as TripsState).trips)
+            .find(t => t.templateTrip === newTrip.relatedTrip)
+
+          if (relatedTrip) {
+            newTrip.relatedTrip = relatedTrip.id
+            this.$store.commit('trips/updateTrip', {
+              tripId: relatedTrip.id,
+              updates: {relatedTrip: newTrip.id},
+            })
+          }
+        }
+
         this.$store.commit('trips/assignNewlyCreatedJob', {trip: newTrip})
       }
     },
