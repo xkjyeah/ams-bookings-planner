@@ -74,6 +74,14 @@ body {
   width: 100%;
   margin: 0 auto;
 
+  button {
+    background-color: #369;
+    color: #FFF;
+    padding: 0.5em;
+    min-width: 4em;
+    border: outset 2px #888;
+  }
+
   .search-results {
     flex: 1 1 auto;
     position: relative;
