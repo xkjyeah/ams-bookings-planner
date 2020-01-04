@@ -92,6 +92,7 @@ export default {
         startLatLng: null,
         endLatLng: null,
         created: Date.now(),
+        updated: Date.now(),
         isTentative: false,
         isReturnTrip: false,
         relatedTrip: null,
@@ -99,6 +100,7 @@ export default {
         description: 'New trip $100',
         cancelled: false,
         templateTrip: '',
+        lastSMSTimestamp: null,
       }
 
       context.commit('trips/assignNewlyCreatedJob', {trip}, {root: true})

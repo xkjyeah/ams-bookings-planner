@@ -26,6 +26,7 @@ export type Trip = JobBase & {
   relatedTrip: string | null,
   isReturnTrip: boolean,
   hideFromManifest: boolean,
+  lastSMSTimestamp: number | null,
 
   startPostcode: string | null,
   endPostcode: string | null,
@@ -37,6 +38,7 @@ export type Trip = JobBase & {
   endLatLng: LatLng | null,
 
   created: number,
+  updated: number,
   templateTrip: string | null,
 }
 export interface Job {

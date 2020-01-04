@@ -5,6 +5,17 @@
     height="80vh"
   >
     <h3>Send to</h3>
+    <v-alert
+      :value="hasPersonsMissingPhoneNumbers"
+      label=""
+      >
+      Some people on this list do not have phone numbers.
+      <strong>They will not receive your message</strong>.
+      Please update the phone number list before continuing.
+      <v-btn @click="$store.commit('dialogs/showDialog', 'persons')">
+        Update the phone number list.
+      </v-btn>
+    </v-alert>
     <template v-for="(person, i) in persons">
       <span v-if="person.name"
         :key="i">
@@ -45,6 +56,7 @@ import uniqueId from '@/lib/uniqueId'
 import {Message, MessageClient} from '@/lib/messages'
 import vehiclesStore from '@/store/vehicles'
 import {Person} from '@/store/vehicles'
+import {TripsState} from '@/store/trips'
 import store from '@/store'
 import StandardDialog from '@/dialogs/StandardDialog.vue';
 
@@ -83,6 +95,10 @@ export default Vue.extend({
           .find((p: Person) => p.telephone === s)
           || {telephone: s}
       })
+    },
+
+    hasPersonsMissingPhoneNumbers(): boolean {
+      return this.recipients.length < 2
     }
   },
 
@@ -93,6 +109,11 @@ export default Vue.extend({
         message: this.m.message.trim(),
         trip: this.trip,
       })
+      if (this.trip && (store.state.trips as TripsState).trips[this.trip]) {
+        store.commit('trips/markTripSMSSent', {
+          tripId: this.trip,
+        })
+      }
       store.commit('dialogs/hideDialog')
     }
   }

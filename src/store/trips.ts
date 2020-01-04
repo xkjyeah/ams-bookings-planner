@@ -280,6 +280,7 @@ export default {
         ...options.trip,
         driver: options.team.driver,
         medic: options.team.medic,
+        updated: Date.now(),
       }
 
       toSchedule.rows = packTrips([
@@ -371,6 +372,7 @@ export default {
       for (let key of Object.keys(options.updates)) {
         trip[key] = options.updates[key]
       }
+      trip.updated = Date.now()
 
       if ('startTime' in options.updates || 'endTime' in options.updates) {
         schedule.rows = packTrips(_.flatten(schedule.rows).map(tripId => state.trips[tripId]))
@@ -382,6 +384,11 @@ export default {
         // FIXME: debounce this somewhat.../
         syncTrip(state.mode, trip)
       }
+    },
+
+    markTripSMSSent(state: TripsState, options: {tripId: string}) {
+      const trip: any = state.trips[options.tripId]
+      trip.lastSMSTimestamp = Date.now()
     },
 
     deleteTrip(state: TripsState, options: {tripId: string}) {
@@ -763,7 +770,9 @@ export function parseTripsData(v: firebase.database.DataSnapshot): Trip[] {
         : null,
       cancelled: tripRaw.cancelled || false,
       created: tripRaw.created || Date.now(),
+      updated: tripRaw.updated || Date.now(),
       templateTrip: tripRaw.templateTrip || null,
       messages: tripRaw.messages ? deserializeArray(tripRaw.messages) : [],
+      lastSMSTimestamp: tripRaw.lastSMSTimestamp || null,
     }))
 }
