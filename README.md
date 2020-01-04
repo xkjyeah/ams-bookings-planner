@@ -39,4 +39,6 @@ TODO:
 29. [ ] Sent message indicator
 30. [ ] Return trip, done by whom, prev description
 31. [ ] include team name in SMS
-32. [ ] bug: cannot create return trip when return trip deleted
+32. [X] bug: cannot create return trip when return trip deleted
+33. [ ] For future trips, show current users current position in the chart
+34. [ ] Dialysis trip indicator, hide from manifest

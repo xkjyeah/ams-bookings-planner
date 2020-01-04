@@ -6,6 +6,7 @@
       'is-selected': isSelected,
       'is-tentative': trip.isTentative,
       'cancelled': trip.cancelled,
+      'hidden-from-manifest': trip.hideFromManifest,
     }"
     :style="{
       left: (trip.startTime / 3600e3 * xScale()) + 'px',
@@ -46,15 +47,18 @@
   &:hover:not(.is-selected) {
     box-shadow: 0px 0px 4px rgba(0, 0, 153, 0.5);
   }
-}
-.is-selected {
-  box-shadow: 0px 0px 4px #009;
-}
-.trip-box.is-tentative {
-  border: dashed 1px #404;
-}
-.cancelled {
-  text-decoration: line-through;
+  &.is-tentative {
+    border: dashed 1px #404;
+  }
+  &.is-selected {
+    box-shadow: 0px 0px 4px #009;
+  }
+  &.hidden-from-manifest {
+    border: solid 1.5px #F00;
+  }
+  &.cancelled {
+    text-decoration: line-through;
+  }
 }
 </style>
 

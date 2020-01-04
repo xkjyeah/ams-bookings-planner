@@ -8,6 +8,7 @@
       <v-card-title>
         <v-layout>
           <h2>{{title}}</h2>
+          <slot name="header" />
           <v-spacer />
           <v-btn small icon @click="handleDialogInput">
             <v-icon>close</v-icon>

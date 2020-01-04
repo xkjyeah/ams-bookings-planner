@@ -95,6 +95,7 @@ export default {
         isTentative: false,
         isReturnTrip: false,
         relatedTrip: null,
+        hideFromManifest: false,
         description: 'New trip $100',
         cancelled: false,
         templateTrip: '',

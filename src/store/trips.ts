@@ -755,6 +755,7 @@ export function parseTripsData(v: firebase.database.DataSnapshot): Trip[] {
       endLatLng: parseLatLng(tripRaw.endLatLng),
       isTentative: !!tripRaw.isTentative,
       relatedTrip: tripRaw.relatedTrip || null,
+      hideFromManifest: !!tripRaw.hideFromManifest,
       isReturnTrip: !!tripRaw.isReturnTrip,
       type: tripRaw.type || '<No type>',
       price: isFinite(tripRaw.price)

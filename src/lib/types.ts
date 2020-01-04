@@ -25,6 +25,7 @@ export type Trip = JobBase & {
   isTentative: boolean,
   relatedTrip: string | null,
   isReturnTrip: boolean,
+  hideFromManifest: boolean,
 
   startPostcode: string | null,
   endPostcode: string | null,

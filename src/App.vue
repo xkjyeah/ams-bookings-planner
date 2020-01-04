@@ -2,7 +2,8 @@
   <v-layout column class="app-app">
     <v-layout class="controls" row
         :class="{
-          'app-showing-template': $store.state.trips.mode.type === 'template'
+          'app-showing-template': $store.state.trips.mode.type === 'template',
+          'hidden-in-print': true,
         }"
 
     >
@@ -65,9 +66,9 @@
         </v-list>
       </v-menu>
     </v-layout>
-    <TripEditor class="trip-editor-window" />
+    <TripEditor class="trip-editor-window hidden-in-print" />
     <ChartArea
-      class="chart-area"
+      class="chart-area hidden-in-print"
       ref="chart-area"
       :xAxisScale="xAxisScale"
       :yAxisScale="yAxisScale"
@@ -75,6 +76,7 @@
       />
     <v-btn
       @click="showNewTripDialog"
+      class="hidden-in-print"
       dark
       fab
       color="pink"
@@ -85,6 +87,8 @@
     <TimeUpdater />
     <VehiclesSync />
     <TripsSync />
+
+    <PrintableManifest />
 
     <TeamsDialog v-if="$store.state.dialogs.activeDialog === 'teams'" />
     <PersonsDialog v-else-if="$store.state.dialogs.activeDialog === 'persons'" />
@@ -155,6 +159,7 @@ import TeamList from '@/components/chart/TeamList.vue';
 import TimeUpdater from '@/components/util/TimeUpdater.vue';
 import TripEditor from '@/components/TripEditor.vue';
 import DatePicker from '@/components/DatePicker.vue';
+import PrintableManifest from '@/components/PrintableManifest.vue';
 import TeamsDialog from '@/dialogs/Teams.vue';
 import PersonsDialog from '@/dialogs/Persons.vue';
 import ManifestDialog from '@/dialogs/Manifest.vue';
@@ -213,6 +218,7 @@ export default Vue.extend({
     ManifestDialog,
     MessagesDialog,
     PersonsDialog,
+    PrintableManifest,
     TimeUpdater,
     TeamList,
     TeamsDialog,

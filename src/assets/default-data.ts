@@ -660,6 +660,7 @@ export default function (): Job[] {
         relatedTrip: null,
         isReturnTrip: false,
         templateTrip: null,
+        hideFromManifest: false,
       },
       secondTrip: (s[2] || s[3] || s[6]) ? {
         id: uniqueId(),
@@ -682,6 +683,7 @@ export default function (): Job[] {
         relatedTrip: null,
         isReturnTrip: false,
         templateTrip: null,
+        hideFromManifest: false,
       } : null,
       date: Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
       type: s[8],

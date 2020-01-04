@@ -137,6 +137,11 @@
         @change="updateTrip('isTentative', $event)"
         label="Timing is tentative"
         />
+      <v-checkbox
+        :input-value="tripBeingEdited.hideFromManifest"
+        @change="updateTrip('hideFromManifest', $event)"
+        label="Hide from manifest"
+        />
       <hr/>
       <!-- <SMSSection
         :trip="tripBeingEdited"
