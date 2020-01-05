@@ -2,6 +2,7 @@
   <v-tooltip
     v-bind="$attrs"
     v-on="$listeners"
+    content-class="unobstrustive-disable-mouse"
     >
     <slot slot="activator" />
     <div>

@@ -1,7 +1,7 @@
 <template>
 <div>
   <!-- Draggable stuff -->
-  <transition-group name="team-list">
+  <transition-group name="team-list" tag="div">
     <div v-for="([team, data], i) in teamSchedules"
       :key="`${team.driver},${team.medic},${data.row}`"
       :style="{
@@ -23,7 +23,8 @@
       @dragover="onDragOver($event, i)"
       >
       <template v-if="team.driver || team.medic">
-        {{team.driver}}, {{team.medic}}
+        <span>{{team.driver}}, {{team.medic}} </span>
+        <VehicleLabel :value="team.vehicle" right />
       </template>
       <template v-else>
         <em class="not-assigned">Not assigned</em>
@@ -65,6 +66,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import VehicleLabel from '@/dialogs/teams/VehicleLabel.vue'
 
 interface TeamListData {
   dragIndex: number,
@@ -82,6 +84,9 @@ export default Vue.extend({
       type: Array,
       required: true,
     }
+  },
+  components: {
+    VehicleLabel,
   },
   data (): TeamListData {
     return {

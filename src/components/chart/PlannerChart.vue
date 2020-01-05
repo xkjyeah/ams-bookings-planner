@@ -41,6 +41,18 @@
       }"
       >
     </div>
+
+    <div
+      v-if="drag.row >= 0"
+      style="background-color: #DDD; position: absolute; pointer-events: none"
+      :style="{
+        top: (drag.row * yAxisScale + xAxisHeight) + 'px',
+        height: yAxisScale + 'px',
+        left: yAxisWidth + 'px',
+        width: (24 * xAxisScale) + 'px',
+      }"
+      >
+    </div>
   </div>
 </template>
 

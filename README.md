@@ -42,7 +42,8 @@ TODO:
 32. [X] bug: cannot create return trip when return trip deleted
 34. [X] Dialysis trip indicator, hide from manifest
 35. [X] Warn when some members do not have (valid) phone numbers
-36. [ ] Show driver/medic's current location, esp if not today
-37. [ ] drag-and-drop to change time
-38. [ ] is there a bug when changing the time of another trip?
-39. [ ] scrolling is broken!
+36. [X] Show driver/medic's current location, esp if not today
+37. [X] drag-and-drop to change time
+38. [X] is there a bug when changing the time of another trip?
+39. [X] scrolling is broken!
+40. [ ] highlighting while dragging which row is selected

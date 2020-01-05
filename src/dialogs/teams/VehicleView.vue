@@ -1,15 +1,8 @@
 <template>
   <span v-if="value && vehiclesById[value]">
-    <VehicleTooltip v-if="vehiclesById[value]" :value="vehiclesById[value]"
-      bottom>
-      {{value}}
-      <span class="vehicle"
-        :style="{
-          'background-color': singaporeColors(vehiclesById[value])
-        }"
-        :class="{stale: stale(vehiclesById[value])}">
-      </span>
-    </VehicleTooltip>
+    <VehicleLabel :value="value" bottom>
+      <template slot="before">{{value}} </template>
+    </VehicleLabel>
   </span>
   <span v-else-if="value">
     {{value}}
@@ -18,26 +11,12 @@
     {{placeholder}}
   </span>
 </template>
-<style lang="scss" scoped>
-.vehicle {
-  display: inline-block;
-  vertical-align: middle;
-  border: solid 1px black;
-  height: 0.9em;
-  width: 0.9em;
-  border-radius: 3px;
-
-  &.stale {
-    opacity: 0.5;
-  }
-}
-</style>
 
 <script lang="ts">
 import Vue from 'vue'
-import { VehiclesState, PersonList, VehicleStatus, vehicleStatusIsStale } from '@/store/vehicles';
+import { VehiclesState, PersonList, VehicleStatus } from '@/store/vehicles';
 import singaporeColors from '@/lib/singaporeColors'
-import VehicleTooltip from '@/components/common/VehicleTooltip.vue'
+import VehicleLabel from '@/dialogs/teams/VehicleLabel.vue'
 
 export default Vue.extend({
   props: {
@@ -48,15 +27,9 @@ export default Vue.extend({
     vehiclesById(): {[k: string]: VehicleStatus} {
       return this.$store.getters['vehicles/vehiclesById']
     },
-    singaporeColors: () => (v: VehicleStatus): string => {
-      return singaporeColors(v)
-    },
-    stale: () => (v: VehicleStatus) => {
-      return vehicleStatusIsStale(v)
-    }
   },
   components: {
-    VehicleTooltip,
+    VehicleLabel,
   }
 })
 </script>
