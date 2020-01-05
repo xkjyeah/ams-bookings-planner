@@ -28,9 +28,9 @@
                   @click.prevent.stop="showOnMap(v)"
                   >
                   {{v.location}}
-                  <br/>
-                  {{v.created && sAgo(v.created)}}
                 </a>
+                <br/>
+                {{v.created && sAgo(v.created)}}
               </td>
               <td>
                 {{v.speed}}km/h
