@@ -18,7 +18,12 @@
         <!-- {{vehicles}} -->
         <table class="the-table">
           <tbody>
-            <tr v-for="(v, i) in vehicles" :key="v.registrationNumber">
+            <tr v-for="(v, i) in vehicles" :key="v.registrationNumber"
+              :class="{
+                'vehicle-stopped': v.vehicleStatus === 'Stopped',
+                'vehicle-idling': v.vehicleStatus === 'Idling',
+                'vehicle-inactive': v.vehicleStatus === 'Inactive',
+              }">
               <td style="width: 6.5em">
                 {{v.registrationNumber}}<br/>
                 <span class="vehicle-status">({{v.vehicleStatus}})</span>
@@ -42,11 +47,12 @@
       </div>
       <gmap-map class="search-map" :center="mapCenter" :zoom="mapZoom"
         ref="searchMap" @zoom_changed="mapZoom = $event" :options="mapOptions">
-        <gmap-marker :position="mapCenter" />
+        <!-- <gmap-marker :position="mapCenter" /> -->
         <gmap-marker
           v-for="(v, i) in vehicles"
           :position="{lat: v.lat, lng: v.lng}"
           :key="v.registrationNumber"
+          :icon="image(v)"
         />
       </gmap-map>
     </div>
@@ -121,6 +127,9 @@ body {
         th,td {
           border: solid 1px #CCC;
         }
+        tr.vehicle-stopped td, tr.vehicle-inactive td {
+          opacity: 0.5;
+        }
         .location a {
           text-decoration: none;
         }
@@ -175,6 +184,25 @@ export default {
   },
   computed: {
     sAgo: () => (timestamp) => sAgo(new Date(timestamp)),
+    selectedVehicle () {
+      return this.vehicles.find(v => v.registrationNumber === this.selected)
+    },
+    image: () => (vehicle) => {
+      if (!google || !google.maps || !google.maps.Point) return null;
+      return {
+        url: vehicleNumberSVG(
+          vehicle.registrationNumber,
+          vehicle.vehicleStatus === 'Moving' ? '#090'
+          : vehicle.vehicleStatus === 'Stopped' ? '#ccc'
+          : vehicle.vehicleStatus === 'Inactive' ? '#ccc'
+          : vehicle.vehicleStatus === 'Idling' ? '#f00'
+          : '#00f'
+        ),
+        anchor: new google.maps.Point(40, 50),
+        size: new google.maps.Size(80, 50),
+        scaledSize: new google.maps.Size(80, 50),
+      }
+    },
     unknownAuth () {
       return this.authState === null
     },
@@ -201,6 +229,16 @@ export default {
         if (!e) return
         this.handleIncomingSnapshot(e)
       })
+  },
+  watch: {
+    selectedVehicle(v) {
+      if (v) {
+        this.$refs.searchMap.panTo({
+          lat: v.lat,
+          lng: v.lng,
+        })
+      }
+    }
   },
   methods: {
     handleIncomingSnapshot(snapshot) {
@@ -258,11 +296,30 @@ export default {
         lng: parseFloat(vehicle.lng)
       };
 
-      this.$refs.searchMap.panTo(this.mapCenter)
+      // this.$refs.searchMap.panTo(this.mapCenter)
       this.mapZoom = 18
       this.viewingMap = true
-      this.selected = vehicle
+      this.selected = vehicle.registrationNumber
     }
   }
 }
+
+function vehicleNumberSVG(s, color) {
+  const template = `
+  <?xml version="1.0" ?>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    version="1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="80" height="50">
+    <polygon points="30,20 40,50 50,20" fill="${color}" />
+    <rect x="1" width="78" y="20" height="12" fill="#FFFFFF" stroke="#000000" stroke-width="1" />
+    <text text-anchor="middle" x="40" y="29"
+      color="#000000" style="font-size: 11px; font-family: sans-serif">${s}</text>
+  </svg>
+  `.trim()
+
+  return 'data:image/svg+xml;charset=UTF-8;base64,' + btoa(template);
+}
+
 </script>
