@@ -46,6 +46,7 @@
         </table>
       </div>
       <gmap-map class="search-map" :center="mapCenter" :zoom="mapZoom"
+        @drag="selected = null"
         ref="searchMap" @zoom_changed="mapZoom = $event" :options="mapOptions">
         <!-- <gmap-marker :position="mapCenter" /> -->
         <gmap-marker
