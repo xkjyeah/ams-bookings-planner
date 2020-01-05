@@ -109,14 +109,7 @@
         :disabled="tripBeingEdited.cancelled"
         />
 
-      <!-- <DateEditor
-        label="Date"
-        :value="tripBeingEdited.date"
-        @input="updateTrip('date', $event)"
-        :disabled="tripBeingEdited.cancelled"
-        /> -->
-
-        <TimeEditor
+      <TimeEditor
         label="Start Time"
         :value="tripBeingEdited.startTime"
         @input="updateTrip('startTime', $event)"
@@ -188,7 +181,6 @@ import TimeEditor from '@/components/common/TimeEditor.vue'
 import TeamsSelect from '@/components/TeamsSelect.vue'
 import SMSSection from '@/components/SMSSection.vue'
 import PostcodePicker from '@/components/common/PostcodePicker.vue'
-import DateEditor from '@/components/common/DateEditor.vue'
 import MessageHistory from '@/components/MessageHistory.vue'
 import singaporeColors from '@/lib/singaporeColors'
 import {} from 'googlemaps'
@@ -200,7 +192,6 @@ import scrollHelper from '@/lib/scrollHelper'
 export default Vue.extend({
   components: {
     TimeEditor,
-    DateEditor,
     PostcodePicker,
     TeamsSelect,
     MessageHistory,

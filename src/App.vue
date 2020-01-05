@@ -109,7 +109,11 @@
   color: #888;
 }
 .app-app {
-  min-height: 100vh;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
 }
 </style>
 

@@ -389,6 +389,7 @@ export default {
     markTripSMSSent(state: TripsState, options: {tripId: string}) {
       const trip: any = state.trips[options.tripId]
       trip.lastSMSTimestamp = Date.now()
+      syncTrip(state.mode, trip)
     },
 
     deleteTrip(state: TripsState, options: {tripId: string}) {
