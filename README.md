@@ -46,4 +46,4 @@ TODO:
 37. [X] drag-and-drop to change time
 38. [X] is there a bug when changing the time of another trip?
 39. [X] scrolling is broken!
-40. [ ] highlighting while dragging which row is selected
+40. [X] highlighting while dragging which row is selected

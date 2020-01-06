@@ -60,7 +60,7 @@
           @click="tripClicked(trip)"
 
           v-draggable
-          @dragstart.native="onDragStart($event, trip)"
+          @dragstart.native="onDragStart($event, trip, i)"
           @dragend.native="onDragEnd()"
           />
       </template>
@@ -185,11 +185,14 @@ export default Vue.extend({
       this.$emit('trip-clicked', {tripId: trip.id})
     },
 
-    onDragStart(event: DragEvent, trip: Trip) {
+    onDragStart(event: DragEvent, trip: Trip, row: number) {
       tripReassignment.setData({
         start: trip.startTime,
         end: imputedEndTime(trip),
         tripId: trip.id,
+        offsetX: event.offsetX,
+        offsetY: event.offsetY,
+        originalRow: row,
       })
       // Firefox insists on this to activate the drag
       event.dataTransfer!.setData('text/team-reorder-drag', 'dummy')
@@ -226,15 +229,5 @@ export default Vue.extend({
     },
   }
 });
-
-function computeRelativeXPosition(event: MouseEvent, rootElement: Element) {
-  let x = event.offsetX
-  let node = event.target as Element
-
-  x += node.getBoundingClientRect().top -
-    rootElement.getBoundingClientRect().top
-
-  return x
-}
 
 </script>

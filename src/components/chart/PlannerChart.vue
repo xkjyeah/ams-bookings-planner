@@ -91,7 +91,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { KeyableTrip } from '@/lib/types';
+import { KeyableTrip, imputedEndTime } from '@/lib/types';
 import store from '@/store';
 import * as tripReassignment from './tripReassignment'
 import { TripsState } from '../../store/trips';
@@ -106,6 +106,7 @@ export default Vue.extend({
         row: -1,
         start: null,
         end: null,
+        type: null as null | 'reassign' | 'retime',
       }
     }
   },
@@ -170,11 +171,30 @@ export default Vue.extend({
         return
       }
 
-      // Show preview of destination
-      // Compute row, width
-      this.drag.row = canonicalOffsetForRow
-      this.drag.start = start
-      this.drag.end = end
+      if (canonicalOffsetForRow !== data.originalRow) {
+        // Show preview of destination team
+        // Compute row, width
+        this.drag.type = 'reassign'
+        this.drag.row = canonicalOffsetForRow
+        this.drag.start = start
+        this.drag.end = end
+      } else {
+        // We want to re-time the job instead
+        const x = computeRelativeXPosition(event, this.$refs.scrollRef as Element)
+        // snap to nearest 15mins
+        const draggedTime = this.xPositionToNearestTick(x - data.offsetX)
+
+        // Show preview of destination time
+        // Compute row, width
+        this.drag.type = 'retime'
+        this.drag.row = canonicalOffsetForRow
+        this.drag.start = draggedTime
+        this.drag.end = draggedTime + end - start
+      }
+    },
+
+    xPositionToNearestTick (x: number) {
+      return Math.round(x / this.xAxisScale * 12) / 12 * 3600e3
     },
 
     onDrop(event: DragEvent) {
@@ -184,27 +204,37 @@ export default Vue.extend({
       }
       const y = computeRelativeYPosition(event, this.$refs.scrollRef as Element)
 
-      const {tripId} = data
+      const {tripId, start, end} = data
 
       const row = Math.floor(y / this.yAxisScale)
-
       const tripToMove = (this.$store.state.trips as TripsState).trips[tripId]
-      const destinationTeam = this.$store.getters['trips/teamForRow'](row)
-      const wantToEdit = this.$store.getters['tripEditing/tripBeingEdited'] === tripToMove
 
-      this.$store.commit('trips/reassignJob', {
-        trip: tripToMove,
-        team: destinationTeam,
-      })
+      if (row !== data.originalRow) {
+        const destinationTeam = this.$store.getters['trips/teamForRow'](row)
+        const wantToEdit = this.$store.getters['tripEditing/tripBeingEdited'] === tripToMove
 
-      if (wantToEdit) {
-        this.$store.commit('tripEditing/editTrip', {
-          tripId: tripToMove.id
+        this.$store.commit('trips/reassignJob', {
+          trip: tripToMove,
+          team: destinationTeam,
+        })
+      } else {
+        // We want to re-time the job instead
+        const x = computeRelativeXPosition(event, this.$refs.scrollRef as Element)
+        // snap to nearest 15mins
+        const draggedTime = this.xPositionToNearestTick(x - data.offsetX)
+        const newStartTime = draggedTime
+        const newEndTime = draggedTime + end - start
+
+        this.$store.commit('trips/updateTrip', {
+          tripId: tripToMove.id,
+          updates: {
+            startTime: newStartTime,
+            newEndTime: tripToMove.endTime === null ? null : newEndTime
+          }
         })
       }
 
       this.drag.row = -1 // Disable the placeholder now
-
       event.preventDefault()
     },
 
@@ -213,6 +243,16 @@ export default Vue.extend({
     }
   }
 })
+
+function computeRelativeXPosition(event: MouseEvent, rootElement: Element) {
+  let x = event.offsetX
+  let node = event.target as Element
+
+  x += node.getBoundingClientRect().left -
+    rootElement.getBoundingClientRect().left
+
+  return x
+}
 
 function computeRelativeYPosition(event: MouseEvent, rootElement: Element) {
   let y = event.offsetY
