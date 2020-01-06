@@ -104,8 +104,8 @@ export default Vue.extend({
 
       drag: {
         row: -1,
-        start: null,
-        end: null,
+        start: null as number | null,
+        end: null as number | null,
         type: null as null | 'reassign' | 'retime',
       }
     }
@@ -184,12 +184,16 @@ export default Vue.extend({
         // snap to nearest 15mins
         const draggedTime = this.xPositionToNearestTick(x - data.offsetX)
 
-        // Show preview of destination time
-        // Compute row, width
-        this.drag.type = 'retime'
-        this.drag.row = canonicalOffsetForRow
-        this.drag.start = draggedTime
-        this.drag.end = draggedTime + end - start
+        if (Math.abs(draggedTime - start) >= .5 * 3600e3 || this.drag.type === 'retime') {
+          // Show preview of destination time
+          // Compute row, width
+          this.drag.type = 'retime'
+          this.drag.row = canonicalOffsetForRow
+          this.drag.start = draggedTime
+          this.drag.end = draggedTime + end - start
+        } else {
+          this.drag.type = null
+        }
       }
     },
 
@@ -217,13 +221,9 @@ export default Vue.extend({
           trip: tripToMove,
           team: destinationTeam,
         })
-      } else {
-        // We want to re-time the job instead
-        const x = computeRelativeXPosition(event, this.$refs.scrollRef as Element)
-        // snap to nearest 15mins
-        const draggedTime = this.xPositionToNearestTick(x - data.offsetX)
-        const newStartTime = draggedTime
-        const newEndTime = draggedTime + end - start
+      } else if (this.drag.type === 'retime') {
+        const newStartTime = this.drag.start
+        const newEndTime = this.drag.end
 
         this.$store.commit('trips/updateTrip', {
           tripId: tripToMove.id,
@@ -234,6 +234,7 @@ export default Vue.extend({
         })
       }
 
+      this.drag.type = null
       this.drag.row = -1 // Disable the placeholder now
       event.preventDefault()
     },
