@@ -197,11 +197,12 @@ export default {
           : vehicle.vehicleStatus === 'Stopped' ? '#ccc'
           : vehicle.vehicleStatus === 'Inactive' ? '#ccc'
           : vehicle.vehicleStatus === 'Idling' ? '#f00'
-          : '#00f'
+          : '#00f',
+          vehicle.direction
         ),
         anchor: new google.maps.Point(40, 50),
-        size: new google.maps.Size(80, 50),
-        scaledSize: new google.maps.Size(80, 50),
+        size: new google.maps.Size(80, 80),
+        scaledSize: new google.maps.Size(80, 80),
       }
     },
     unknownAuth () {
@@ -298,22 +299,44 @@ export default {
       };
 
       // this.$refs.searchMap.panTo(this.mapCenter)
-      this.mapZoom = 18
+      this.mapZoom = 17
       this.viewingMap = true
       this.selected = vehicle.registrationNumber
     }
   }
 }
 
-function vehicleNumberSVG(s, color) {
+function vehicleNumberSVG(s, color, direction) {
   const template = `
   <?xml version="1.0" ?>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     version="1.1"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    width="80" height="50">
+    width="80" height="80">
+
+    <g transform="translate(40, 50)
+                  rotate(${(direction - 1) * -45})
+                  scale(1.5)
+                  translate(-40, -50)">
+      <!-- body -->
+      <polygon points="35,37 45,37 45,60 35,60" fill="#EEEEEE" stroke="#666666" />
+      <!-- windshield -->
+      <polygon points="35,40 45,40 45,43 35,43" fill="#0000FF" stroke="#666666" />
+      <!-- wing mirror -->
+      <polygon points="33,41 35,41 35,42 33,42" fill="#EEEEEE" stroke="#666666" />
+      <polygon points="47,41 45,41 45,42 47,42" fill="#EEEEEE" stroke="#666666" />
+      <!-- front lights -->
+      <line x1="36" y1="37" x2="38" y2="37" stroke="#FF9900" stroke-width="2"/>
+      <line x1="44" y1="37" x2="42" y2="37" stroke="#FF9900" stroke-width="2"/>
+      <!-- rear lights -->
+      <line x1="36" y1="60" x2="38" y2="60" stroke="#FF0000" stroke-width="2"/>
+      <line x1="44" y1="60" x2="42" y2="60" stroke="#FF0000" stroke-width="2"/>
+
+    </g>
+
     <polygon points="30,20 40,50 50,20" fill="${color}" />
+
     <rect x="1" width="78" y="20" height="12" fill="#FFFFFF" stroke="#000000" stroke-width="1" />
     <text text-anchor="middle" x="40" y="29"
       color="#000000" style="font-size: 11px; font-family: sans-serif">${s}</text>
